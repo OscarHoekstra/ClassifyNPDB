@@ -5,7 +5,7 @@ Student Number: 961007346130
 Description:
 """
 import sys
-import Run_pyclassyfire4
+from Scripts import Run_pyclassyfire4
 import pickle
 
 def LoadMibigCsv(InFile):

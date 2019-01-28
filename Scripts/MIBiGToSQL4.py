@@ -11,9 +11,8 @@ import sys
 import re
 import requests
 import json
-import InteractWithSQL
-import ClassifyMibigCsv
-from MyFunctions import JoinList
+from Scripts import InteractWithSQL, ClassifyMibigCsv
+from Scripts.MyFunctions import JoinList
 from rdkit import Chem
 
 def CreateRDKitSmile(smile,doKekulize,dokekuleSmiles,doisomericSmiles):
