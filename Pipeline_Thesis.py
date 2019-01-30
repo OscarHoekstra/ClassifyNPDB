@@ -5,52 +5,57 @@ Student Number: 961007346130
 Email: oscarhoekstra@wur.nl
 Description: Runs the pipeline for linking the MIBiG and NPDB databases
 """
+
 import time
 import sys
 import config
-from Scripts import GetSqlIDs, InchiToSQL, ClassifyMibigCsv, MIBiGToSQL4
-from Scripts import Run_pyclassyfire4
+from Scripts import GetSqlIDs, InchiToSQL, ClassifyMibigTsv
+from Scripts import MIBiGToSQL4, Run_pyclassyfire4
 import pickle
-#import SQL_IDS_to_List
-#import Run_pyclassyfire4
-#import os
 
 
 def PrintTime():
-	"""Print the current date and time on the screen."""
-	CurTime = time.strftime("%d-%m-%Y %H:%M")
-	print("It is currently: "+CurTime)
+    """Print the current date and time on the screen."""
+    CurTime = time.strftime("%d-%m-%Y %H:%M")
+    print("It is currently: "+CurTime)
 
 
 def interval(start,location = False, decimals = 2):
-	Elapsed = time.time()-start
-	if Elapsed < 600:
-		IntervalTime = str(round(time.time()-start,decimals))+" Seconds"
-	else:
-		IntervalTime = str(round(time.time()-start)/60)+" Minutes"
-	if location != False:
-		print(IntervalTime+" at location "+str(number))
-	newstart=time.time()
-	return IntervalTime, newstart
+    """Prints the time since that last time interval() was called in
+    this script.
 
+    Keyword Arguments:
+        start -- float, created with time.time() or by the previous
+                 calling of interval()
+        location -- string/boolean, if not False the interval time is
+                    printed with the location name that is entered here
+    Returns:
+        IntervalTime -- str, time since the last interval in secs or mins
+        newstart -- float, can be used as the start variable for the next
+                    calling of interval()
+    """
+    Elapsed = time.time()-start
+    if Elapsed < 600:
+        IntervalTime = str(round(time.time()-start,decimals))+" Seconds"
+    else:
+        IntervalTime = str(round(time.time()-start)/60)+" Minutes"
+    if location != False:
+        print(IntervalTime+" at location "+str(number))
+    newstart=time.time()
+    return IntervalTime, newstart
 
 
 
 if __name__ == "__main__":
-    cfg = config.Settings()
-    SkipSteps = cfg['SkipSteps']
-    start = time.time()
-
-    #InchiKeysFilePath = Args[1]
-    #NPDBtableName = Args[3]
-    #MIBiGtableName = Args[4]
-    #MIBiGsmilesFile = Args[5]
-
+    cfg = config.Settings() # Load the settings with which to run the
+                            # pipeline.
+    SkipSteps = cfg['SkipSteps'] # Which steps of the pipeline to skip
+    start = time.time() # Time indicator for when the pipeline was started
 
 
     # Add all the arguments to a textfile that will later contain the
-    # unclassified structures. This will make sure that I know which
-    # datasets the file belong to.
+    # unclassified structures. This way you can add a comment in the
+    # command line which will end up in the output.
     with open(cfg['UnclassifiedFile'], 'w') as w:
         w.write("Arguments: "+str(sys.argv)+"\n")
 
@@ -64,6 +69,7 @@ if __name__ == "__main__":
                               cfg['structure_id'])
     Interval,start = interval(start)
     print("Step 1 took "+Interval)
+
 
     if 2 not in SkipSteps:
 #2 Get Inchi Keys from Sam/Rutger, Input into NPDB and combine 2
@@ -82,17 +88,17 @@ if __name__ == "__main__":
 #  with ClassyFire.
         print("_____Starting Step 3")
         PrintTime()
-        #Adding Smiles from csv to mibig database
-
-        #!!!
-        MibigCompoundDict = ClassifyMibigCsv.LoadMibigCsv(cfg['MibigSmilesFile'])
+        #Adding Smiles from tsv to mibig database
+        MibigCompoundDict = ClassifyMibigTsv.LoadMibigTsv(cfg['MibigSmilesFile'])
         MIBiGToSQL4.main(cfg['SQLPath'],cfg['MibigTable'],MibigCompoundDict)
         with open(cfg['PQueryID'],"rb") as f:
             QueryIDDict = pickle.load(f)
         Run_pyclassyfire4.mainMIBIG(QueryIDDict,cfg['SQLPath'],cfg['MibigTable'],TimeStamp = cfg['StartTimestamp'])
 
+
         Interval,start = interval(start)
         print("_____Step 3 took "+Interval)
+
 
     if 4 not in SkipSteps:
 #4 Run ClassyFire on NPDB and put results back into database
@@ -134,9 +140,8 @@ if __name__ == "__main__":
             print("All batches that have finished have been saved to the SQL database")
         print("_____Step 4 took "+Interval)
 
-
-#5 Combine MIBiG and NPDB somehow
-
-    ScriptEnd = time.time()
-    print("Pipeline Finished!")
-    print("The whole script took: "+str(round(ScriptEnd - cfg['ScriptStartingTime']))+ " Seconds")
+    if 5 not in SkipSteps:
+#5 Ending pipeline with print functions
+        ScriptEnd = time.time()
+        print("Pipeline Finished!")
+        print("The whole script took: "+str(round(ScriptEnd - cfg['ScriptStartingTime']))+ " Seconds")

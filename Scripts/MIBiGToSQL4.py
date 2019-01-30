@@ -1,21 +1,36 @@
 #!/usr/bin/env python3
 """
 Author: Oscar Hoekstra
-Description: !WORK IN PROGRESS!
-Takes all entries from the MIBiG repository and adds them to a new table
-in the NPDB
+Student Number: 961007346130
+Email: oscarhoekstra@wur.nl
+Description: Takes all entries from the MIBiG repository and adds them
+to a new table in the local NPDB SQL database. Also adds Inchi-keys
+created by RDKit.
 """
+
 import sqlite3
 import time
 import sys
-import re
 import requests
 import json
-from Scripts import InteractWithSQL, ClassifyMibigCsv
-from Scripts.MyFunctions import JoinList
+from Scripts import InteractWithSQL, ClassifyMibigTsv
 from rdkit import Chem
 
+def JoinList(LIST):
+    """Joins a list to form a string, if the input is a list.
+    Otherwise the input is likely already a string and can be returned"""
+    if type(LIST) == list:
+        out = ', '.join(LIST)
+    elif type(LIST) == str:
+        out = LIST
+    return out
+
 def CreateRDKitSmile(smile,doKekulize,dokekuleSmiles,doisomericSmiles):
+    """Takes a smile string and tries to translate it with RDKit to a
+    new smile with the other settings mentioned in the arguments set to
+    True or False.
+    See rdkit.Chem package for further explanation.
+    """
     if smile == "NA":
         RDKITsmile = smile
     else:
@@ -26,6 +41,9 @@ def CreateRDKitSmile(smile,doKekulize,dokekuleSmiles,doisomericSmiles):
     return RDKITsmile
 
 def CreateRDKitInchiKey(smile):
+    """Translates a smile string to an Inchi-key with RDKit.
+    See rdkit.Chem package for further explanation.
+    """
     if smile == "NA":
         inchi_key = "NA"
         return inchi_key
@@ -35,6 +53,9 @@ def CreateRDKitInchiKey(smile):
     return inchi_key
 
 def GetSubclass(GP):
+    """Accepts the general paramameters list of a MIBiG JSON file and
+    returns a list of biosynthetic-subclasses that are in it.
+    """
     OutList = []
     for Type in GP['biosyn_class']:
         if Type == "NRP":
@@ -63,14 +84,16 @@ def GetSubclass(GP):
     else:
         return OutList
 
-def main(SqliteFile, MIBiGtableName, CompoundDict):
+def main(sqlite_file, table_name, CompoundDict):
     """Creates a new table in a SQlite file to add the MIBiG data to.
     Keyword Argument:
-        SqliteFile -- Name of the SQlite database to add the MIBiG data to
+        SqliteFile -- Path of the SQlite database to add the MIBiG data to
+        MIBiGtableName -- Name of the to be created or edited table
+        CompoundDict -- Dictionary with compound ids+names as keys and
+                        smiles as values.
+
     """
     StartTime = time.time()
-    sqlite_file = SqliteFile # path of the sqlite database file
-    table_name = MIBiGtableName # name of the table to be created
     id_column = 'compound_id' # name of the column with the primary key
     # names of the new columns
     column_names = ['compound_name','biosyn_class','biosyn_subclass',\
@@ -97,16 +120,18 @@ def main(SqliteFile, MIBiGtableName, CompoundDict):
     # script will assume it has reached the end of the mibig database
     # and stop
     FailedBGCs = [] # initalising a list to store BGC that have failed
-    QueryDict = {}
+    QueryDict = {} # initialise a dictionary with which the SQL filling
+                   # command will be constructed
 
     while FailCounter < FailMax: # while not at the end of the database
         try:
+            # Create the BGC id which always has 7 numbers
             BGC = "BGC"+str(BGCnr).zfill(7)
             url = "https://mibig.secondarymetabolites.org/repository/"+BGC+"/"+BGC+".json"
-            r = requests.get(url)
-            JsonDict = r.json()
-            CompoundInJson = 0 # counter to find out how many compounds are in a BGC
-            # for each compound in each json/dict
+            r = requests.get(url) # Load the json of the current BGC
+            JsonDict = r.json() # Translate the json to a dictionary.
+            CompoundInJson = 0 # Counter to find out how many compounds are in a BGC
+            # For each compound in each json/dict
             for compound in JsonDict['general_params']['compounds']:
                 # If one of the jsons is formatted incorrectly or is missing
                 # a crucial value we do not want the whole script to error.
@@ -114,7 +139,6 @@ def main(SqliteFile, MIBiGtableName, CompoundDict):
                     GP = JsonDict['general_params']
                     MIBIGaccession = GP['mibig_accession']
                     CompoundName = compound.get('compound','NA')
-                    #ChemStruct = re.sub("%\w\w","",compound.get('chem_struct',"NA")).strip()
                     try:
                         ChemStruct = CompoundDict[MIBIGaccession+'_'+CompoundName]
                     except KeyError as e:
@@ -175,25 +199,18 @@ def main(SqliteFile, MIBiGtableName, CompoundDict):
     conn.commit()
     conn.close()
 
-    """ExpectedBGCfail = ["BGC0000071", "BGC0000139", "BGC0000169",
-    "BGC0000390", "BGC0000512", "BGC0000524", "BGC0000681", "BGC0000987",
-    "BGC0001097", "BGC0001129", "BGC0001139", "BGC0001175", "BGC0001326",
-    "BGC0001482", "BGC0001744", "BGC0001831", "BGC0001832", "BGC0001833",
-    "BGC0001834", "BGC0001835", "BGC0001836", "BGC0001837", "BGC0001838",
-    "BGC0001839", "BGC0001840"]
-    if FailedBGCs == ExpectedBGCfail:
-        print("Only the BGCs that are expected to fail have.")
-    else:"""
+    # Print which BGC have failed to load, because they either are not
+    # available or an error with the page has occured.
     print("The BGC that have failed to load are:")
     print(', '.join(FailedBGCs))
     return None
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        print("Needed argument: SQlite database, MIBiG table name, MIBiG smiles csv file")
+        print("Needed argument: SQlite database, MIBiG table name, MIBiG smiles tsv file")
         exit(0)
     StartTime = time.time()
-    MibigCompoundDict = ClassifyMibigCsv.LoadMibigCsv(sys.argv[3])
+    MibigCompoundDict = ClassifyMibigTsv.LoadMibigTsv(sys.argv[3])
     main(sys.argv[1], sys.argv[2],MibigCompoundDict)
     EndTime = time.time()
     print("MIBiGToSQL4 has finished!")

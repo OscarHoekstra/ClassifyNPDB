@@ -13,9 +13,9 @@ def Retrieve_NP_IDs(sqlite_file,table_name,id_column = "structure_id"):
     """Retrieves all NP_IDs from the SQlite database and adds them to a list
 
     Keyword Arguments:
-        SqliteFile -- Path to the SQlite database
-        TableName -- Name of the table in the database to edit
-        IDcolumn -- Name of the column that contains the IDs we want
+        sqlite_file -- Path to the SQlite database
+        table_name -- Name of the table in the database to edit
+        id_column -- Name of the column that contains the IDs we want
     Returns:
         NPDB_ID_List -- List with NP_IDs
     """

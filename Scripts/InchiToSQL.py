@@ -3,13 +3,14 @@
 Author: Oscar Hoekstra
 Student Number: 961007346130
 Email: oscarhoekstra@wur.nl
-Adds different forms of the inchi-keys to the NPDB table in the SQL file.
+Description: Adds different forms of the inchi-keys created by RDKit
+to the NPDB table in the SQL file.
 """
+
 import sqlite3
 import time
 import sys
 from Scripts import InteractWithSQL as Sql
-
 
 
 def InsertIntoSQL(cursor, file_path, table_name, id_column = 'structure_id'):
@@ -20,6 +21,7 @@ def InsertIntoSQL(cursor, file_path, table_name, id_column = 'structure_id'):
         cursor -- SQL cursor object to interact with the database
         file_path -- Path to the inchi-key file
         table_name -- Name of the table in the database to edit
+        id_column -- Name of the column that contains the structure ids
     """
     # Adding molconvert inchi_keys to the database
     EX = {}
@@ -57,6 +59,7 @@ def InsertIntoSQL(cursor, file_path, table_name, id_column = 'structure_id'):
                 idfv=structure_id))"""
     return None
 
+
 def CombineInchiKeys(cursor,table_name, id_column = 'structure_id'):
     """Combine the 2 seperate inchi-keys in the SQL database
     and add the charge similar to the molconvert charge to one copy
@@ -65,6 +68,7 @@ def CombineInchiKeys(cursor,table_name, id_column = 'structure_id'):
     Keyword Arguments:
         cursor -- SQL cursor object to interact with the database
         table_name -- Name of the table in the database to edit
+        id_column -- Name of the column that contains the structure ids
     """
     # Retrieving the structure_id, inchi-keys and the charges from the
     # molconvert inchi-keys.
@@ -79,20 +83,8 @@ def CombineInchiKeys(cursor,table_name, id_column = 'structure_id'):
         # Adding the combined inchi-keys with the 'hopefully' correct charge
         WhereString = f"{id_column} = '{item}'"
         Sql.UpdateTable(cursor, table_name, EX, WhereString)
-
-    """
-    for item in structure_id_list:
-        c.execute("UPDATE {tn} SET {cn}=\"{ik}\" WHERE {idf}=\"{idfv}\"".\
-                format(tn=table_name, cn=column_names[0],\
-                ik=inchi_key_constructed_dict[item], idf=id_column,\
-                idfv=item))
-        c.execute("UPDATE {tn} SET {cn}=\"{ik}\" WHERE {idf}=\"{idfv}\"".\
-                format(tn=table_name, cn=column_names[1],\
-                ik=inchi_key_constructed_dict[item][:-1]+"N", idf=id_column,\
-                idfv=item))
-    """
-
     return None
+
 
 def main(FilePath,SqliteFile,TableName,IDcolumn = 'structure_id'):
     conn, c = Sql.Connect(SqliteFile)

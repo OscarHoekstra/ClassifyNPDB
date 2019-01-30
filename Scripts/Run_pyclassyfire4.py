@@ -2,7 +2,9 @@
 """
 Author: Oscar Hoekstra
 Student Number: 961007346130
-Description:
+Email: oscarhoekstra@wur.nl
+Description: This script runs pyclassyfire on the NPDB and MIBiG SQL
+database
 """
 import sys
 import time
@@ -10,17 +12,31 @@ import json
 import sqlite3
 import re
 import pickle
-from Scripts import SQL_IDS_to_List, InteractWithSQL
-from Scripts.MyFunctions import JoinList
+from Scripts import GetSqlIDs, InteractWithSQL
 import os
 sys.path.insert(0, '/mnt/scratch/hoeks102/Thesis_Bsc/ClassyFireAPI_test')
 import pyclassyfire.client
 
+def JoinList(LIST):
+    """Joins a list to form a string, if the input is a list.
+    Otherwise the input is likely already a string and can be returned"""
+    if type(LIST) == list:
+        out = ', '.join(LIST)
+    elif type(LIST) == str:
+        out = LIST
+    return out
+
+
 def GetToClassify(RedoClassify,ToClassifyFile,NPDB_IDs):
     """Returns the list of structures that still need to be classified
+    and saves a copy of the full structur_id list if you want to redo
+    the classification.
 
     Keyword Arguments:
-        DoClassify -- boolean,
+        RedoClassify -- boolean,
+        ToClassifyFile -- Path to a file with a pickled list of still to
+            be classified structure_ids
+        NPDB_IDs -- Complete list of structure_ids
     """
     ToClassify = []
     if os.path.isfile(ToClassifyFile) and RedoClassify == False:
@@ -34,35 +50,26 @@ def GetToClassify(RedoClassify,ToClassifyFile,NPDB_IDs):
 
 
 def FileToList(FilePath):
-	"""Parses a file with (space) seperated inchi-keys into a list
+    """Parses a file with (space) seperated inchi-keys into a list
 
-	Keyword Arguments:
-		FilePath -- string, path to the inchi-key file
-	Returns:
-		List -- list, list of lists with necessary data
-	"""
-	List = []
-	with open(FilePath) as f:
-		for line in f:
-			List.append(line.rstrip())
-	return List
-
-
-def TestClassyfireSpeed(FilePath):
-    InchiList = FileToList(FilePath)
-    StartTime = time.time()
-    PyClassifyList(InchiList)
-    EndTime = time.time()
-    if EndTime-StartTime < 30000:
-        print("Running Run_pyclassyfire.py took "+\
-         str(round(EndTime-StartTime))+" Seconds")
-    else:
-        print("Running Run_pyclassyfire.py took "+\
-         str(round(EndTime-StartTime)/60)+" Minutes")
+    Keyword Arguments:
+        FilePath -- string, path to the inchi-key file
+    Returns:
+        List -- list, list of lists with necessary data
+    """
+    List = []
+    with open(FilePath) as f:
+        for line in f:
+            List.append(line.rstrip())
+    return List
 
 
 def PyClassifyList(InchiList):
-    """!Old and not in use anymore!"""
+    """Retrieve the ClassyFire classification for a list of inchi-keys
+    This is a old function I used to quickly test the quality of my
+    inchi-keys as it reports how many of them got classifications.
+    This hasnt got much further use because the classifications are
+    not reported or saved"""
     nr_Classified = 0
     nr_Errors = 0
     print("List length: "+str(len(InchiList)))
@@ -74,7 +81,22 @@ def PyClassifyList(InchiList):
             nr_Errors += 1
     print("Classified: "+str(nr_Classified))
     print("Errors: "+str(nr_Errors))
+    return nr_Classified, nr_Errors
 
+
+def TestClassyfireSpeed(FilePath):
+    """Old function I used to test the time it took to retrieve the
+    classification of a list of inchi-keys"""
+    InchiList = FileToList(FilePath)
+    StartTime = time.time()
+    PyClassifyList(InchiList)
+    EndTime = time.time()
+    if EndTime-StartTime < 30000:
+        print("Running Run_pyclassyfire.py took "+\
+         str(round(EndTime-StartTime))+" Seconds")
+    else:
+        print("Running Run_pyclassyfire.py took "+\
+         str(round(EndTime-StartTime)/60)+" Minutes")
 
 
 def PyClassify(InchiKey):
@@ -140,6 +162,9 @@ def PyClassifyStructureList(CompoundDict):
 
 
 def GetPyclassyfireResults(QueryIDDict):
+    """Retrieve the results for a dictionary with mibig compounds and
+    ClassyFire queryIDs and save the results to files.
+    """
     ResultsFolder = "/mnt/scratch/hoeks102/Thesis_Bsc/mibig_classyfire_results/"
     for key, QueryID in QueryIDDict.items():
         try:
@@ -153,7 +178,9 @@ def GetPyclassyfireResults(QueryIDDict):
             print(QueryID)
     return None
 
+
 def GetSinglePyclassyfireResult(QueryID):
+    """Return the results of a ClassyFire queryID"""
     try:
         JsonString = pyclassyfire.client.get_results(QueryID, 'json')
         Class = json.loads(JsonString)
@@ -177,7 +204,11 @@ def GetSinglePyclassyfireResult(QueryID):
 
     return Class
 
+
 def CopyDirectParent(EX):
+    """Copies the direct parent to the place it should be in the
+    classificatoin hierarchy in the list EX, which will be used to
+    fill the SQL database"""
     pos = 0
     for item in EX:
         if pos>0 and item == EX[0]:
@@ -191,7 +222,7 @@ def CopyDirectParent(EX):
 
 def OutputUnclassifiedStructures(ListUnclassified, ListEmpty,
                                  FailedStructures, TimeStamp):
-    """Prints all the unclassified structure-IDs to a file"""
+    """Writes all the unclassified structure-IDs to a file"""
     OutFile = "UnclassifiedStructures-"+TimeStamp+".txt"
     # If no structures in the cluster failed, ignore the next part
     with open(OutFile, 'a') as w:
@@ -201,14 +232,11 @@ def OutputUnclassifiedStructures(ListUnclassified, ListEmpty,
             w.write(">Empty\t"+ID+"\n")
         for ID in FailedStructures:
             w.write(">Failed\t"+ID+"\n")
-    print("All unclassified structure-IDs successfully written to file")
     return None
 
 
-def AddColumns(SqliteFile, TableName, InchiColumn="inchi_key_constructed"):
-    sqlite_file = SqliteFile    # path of the sqlite database file
-    table_name = TableName   # name of the table to be interacted with
-    # name of the new classification column
+def AddColumns(sqlite_file, table_name):
+    """Adds the missing columns to the table of the SQL database"""
     columns = ['cf_direct_parent','cf_kingdom','cf_superclass',\
     'cf_class','cf_subclass','cf_intermediate_0','cf_intermediate_1',\
     'cf_intermediate_2','cf_intermediate_3','cf_intermediate_4',\
@@ -242,6 +270,8 @@ def main(IDList, SqliteFile, TableName,
         SqliteFile -- Path to the SQlite database
         TableName -- Name of the table in the database to edit
         InchiColumn -- Name of the column with the inchi_keys
+        Batched -- Boolean, wheter to perform the classification in batches
+        TimeStamp -- int/float, used to indicate when the output was created
     """
     sqlite_file = SqliteFile    # path of the sqlite database file
     table_name = TableName   # name of the table to be interacted with
@@ -381,6 +411,7 @@ def main(IDList, SqliteFile, TableName,
                                  FailedStructures,TimeStamp)
     return None
 
+
 def mainMIBIG(QueryIDDict, SqliteFile, TableName,
          Batched = False,
          TimeStamp = 000000):
@@ -392,6 +423,8 @@ def mainMIBIG(QueryIDDict, SqliteFile, TableName,
         classifications.
         SqliteFile -- Path to the SQlite database
         TableName -- Name of the table in the database to edit
+        Batched -- Boolean, wheter to perform the classification in batches
+        TimeStamp -- int/float, used to indicate when the output was created
     """
     sqlite_file = SqliteFile    # path of the sqlite database file
     table_name = TableName   # name of the table to be interacted with

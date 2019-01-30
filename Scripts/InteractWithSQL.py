@@ -2,7 +2,9 @@
 """
 Author: Oscar Hoekstra
 Student Number: 961007346130
-Description:
+Email: oscarhoekstra@wur.nl
+Description: Set of functions to generalise and simplify the interacting
+with SQL databases in python.
 """
 import sqlite3
 import sys
@@ -33,7 +35,8 @@ def DictToSQLQuery(QueryDict):
 
 def CreateNewTable(cursor,TableName,PrimaryKeyColumnName,ColumnNames = [],ColumnType = "TEXT"):
     """Creates a new SQL table if it does not exists and all missing
-       columns if it does."""
+       columns if it does.
+    """
     cursor.execute("CREATE TABLE IF NOT EXISTS {tn} ('{pkcn}' {ct} PRIMARY KEY)"
     .format(tn=TableName, pkcn=PrimaryKeyColumnName, ct=ColumnType))
     for column_name in ColumnNames:
@@ -46,6 +49,9 @@ def CreateNewTable(cursor,TableName,PrimaryKeyColumnName,ColumnNames = [],Column
     return True
 
 def InsertOrUpdate(cursor, TableName, QueryDict):
+    """Insert a new row into table, or if the primary key already exists
+    update the row with the values supplied.
+    """
     Columns, Values = DictToSQLQuery(QueryDict)
     try:
         cursor.execute(f"REPLACE INTO {TableName} {Columns} VALUES {Values}")
@@ -55,6 +61,8 @@ def InsertOrUpdate(cursor, TableName, QueryDict):
     return True
 
 def UpdateTable(cursor, TableName, QueryDict, WhereString):
+    """Update the table where the WhereString is true with the supplied
+    values."""
     try:
         Query = ""
         for key, item in QueryDict.items():
@@ -68,6 +76,7 @@ def UpdateTable(cursor, TableName, QueryDict, WhereString):
     return True
 
 def GetFirstValue(cursor, TableName, WhereString, ReturnColumn):
+    """Return the first result produced by the WhereString"""
     try:
         cursor.execute(f"SELECT {ReturnColumn} FROM {TableName} WHERE {WhereString}")
         Result = cursor.fetchone()
