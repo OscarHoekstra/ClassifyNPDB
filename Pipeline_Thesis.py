@@ -138,6 +138,7 @@ if __name__ == "__main__":
         except KeyboardInterrupt:
             print("You seem to have interupted the program while it was running PyClassyFire")
             print("All batches that have finished have been saved to the SQL database")
+        Interval,start = interval(start)
         print("_____Step 4 took "+Interval)
 
     if 5 not in SkipSteps:
