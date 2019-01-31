@@ -45,18 +45,6 @@ def InsertIntoSQL(cursor, file_path, table_name, id_column = 'structure_id'):
             # Adding the molconvert inchi-key to the database
             WhereString = f"{id_column} = '{structure_id}'"
             Sql.UpdateTable(cursor,table_name,EX,WhereString)
-            """c.execute("UPDATE {tn} SET {cn}=\"{ik}\" WHERE {idf}=\"{idfv}\"".\
-                format(tn=table_name, cn=column_names[2],\
-                ik=inchi_key_molconvert[9:], idf=id_column,\
-                idfv=structure_id))
-
-            # Adding the neutralized molconvert inchi-key to the database
-            # If the original already was neutral this will be a copy of
-            # the original
-            c.execute("UPDATE {tn} SET {cn}=\"{ik}\" WHERE {idf}=\"{idfv}\"".\
-                format(tn=table_name, cn=column_names[3],\
-                ik=inchi_key_molconvert_neutral[9:], idf=id_column,\
-                idfv=structure_id))"""
     return None
 
 
@@ -92,7 +80,6 @@ def main(FilePath,SqliteFile,TableName,IDcolumn = 'structure_id'):
                        ColumnNames = ['inchi_key','inchi_key_molconvert',
                                       'inchi_key_molconvert_neutral'])
     InsertIntoSQL(c, FilePath, TableName, IDcolumn)
-    CombineInchiKeys(c,TableName,IDcolumn)
     Sql.Close(conn)
     return True
 

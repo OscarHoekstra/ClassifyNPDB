@@ -84,7 +84,7 @@ def GetSubclass(GP):
     else:
         return OutList
 
-def main(sqlite_file, table_name, CompoundDict):
+def main(sqlite_file, table_name, CompoundDict = None):
     """Creates a new table in a SQlite file to add the MIBiG data to.
     Keyword Argument:
         SqliteFile -- Path of the SQlite database to add the MIBiG data to
@@ -140,7 +140,10 @@ def main(sqlite_file, table_name, CompoundDict):
                     MIBIGaccession = GP['mibig_accession']
                     CompoundName = compound.get('compound','NA')
                     try:
-                        ChemStruct = CompoundDict[MIBIGaccession+'_'+CompoundName]
+                        if CompoundDict == None:
+                            ChemStruct = compound.get('chem_struct','NA')
+                        else:
+                            ChemStruct = CompoundDict[MIBIGaccession+'_'+CompoundName]
                     except KeyError as e:
                         ChemStruct = 'NA'
                 except Exception as e:
