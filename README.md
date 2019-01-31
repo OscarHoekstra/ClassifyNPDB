@@ -1,6 +1,13 @@
-# Thesis_Bsc_Oscar
+# Extended Natural Product Database Pipeline (eNPDB)
 
-One Paragraph of project description goes here
+I created this project during my Bachelor Thesis at the Bioinformatics group at the WUR. 
+My main research goal was to try to improve the linking of NPS (Natural Product Structures) to BGCs (Biosynthetic Gene Clusters) through classification. 
+
+I will start with an in-house SQL database with information about a lot of structures (currently ~300.000). This includes things like an identifier, mass, inchi, inchi-key, smile, mol-formula and class data. It is however only necessary to have identifiers and a inchi-key, or a seperate file with inchi-keys for each identifier to run the pipeline.
+
+For the BGC data i'm going to use the [MIBiG](https://mibig.secondarymetabolites.org/repository.html) database. This database contains both information on the chemical compounds produced from the pathway as well as class data about the BGC.
+
+ClassyFire is then used to automatically produce classifications of structures of both databases. The MIBiG data will then have BGC class data and structure class data. These classifications can be compared hopefully be used to improve the linking between BGCs and Natural Products.
 
 ## Getting Started
 
@@ -40,7 +47,7 @@ To test if all dependencies were set-up correctly and if the pipeline will run o
 
 The settings of the pipeline are defined in a file called config.py. This is a python script with a single function that returns a dictionary with the settings. 
 Edit anything after the colon or between the single quotes in the config.py file to run the pipeline with your own settings and files.
-
+To skips certain steps of the pipeline, you can add numbers to the SkipSteps set.
 ```
 #Example:
 
@@ -87,13 +94,9 @@ Arguments: ['Pipeline_Thesis.py', 'Running pipeline with a new version of the MI
 * [pyclassyfire](https://github.com/JamesJeffryes/pyclassyfire) - Python API with helper functions for using ClassyFire
 * [MIBiG](https://mibig.secondarymetabolites.org/repository.html) - Biosynthetic Gene Cluster Data
 
-## Contributing
-
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
-
 ## Versioning
 
-No versioning was used for this project.
+No versioning was used for this project. It was only near the end of my thesis that I got a fully working version on which only minor changes were made. That is why I just released the full version at the end. This does not mean however that I managed to implement all the features I wanted and there is still a lot to be added.
 
 ## Authors
 
@@ -101,12 +104,44 @@ No versioning was used for this project.
 
 See also the list of [contributors](https://github.com/OscarHoekstra/Thesis_Bsc_Oscar/contributors) who participated in this project.
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
-
 ## Acknowledgments
 
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc
+All the code in this project was written by me (Oscar), but I had a lot of help from people with my code and the data I used. That is why I want to thank the following people:
+* Justin van der Hooft: Thesis Supervisor
+* Marnix Medema: Thesis Supervisor and Lead author MIBiG
+* Sam Stokman: For the NPDB database and support with my thesis
+* Rutger Ozinga: For the NPDB Inchi-keys and support with my thesis
+* Michelle Schorn: For the extended MIBiG SMILES file.
+
+----------------------------------------------------------------------------------------------------------------------------------------
+## Explanation of Scripts
+
+### eNPDB.py
+This is the main script that runs the pipeline and in which the other scripts are used.
+It is seperated into 7 steps:
+1. Retrieving a list of the present structure identifiers from the SQL database. This list is used by the other scripts.
+2. Load a file with (molconvert) inchi-keys for each identifier and add them to the SQL database.
+3. Combine a split inchi-key back into a single one. (see explanation of Natural_Product_Structure.sqlite)
+4. Create a dictionary with structures present in the MIBiG SMILES TSV file
+5. Load the important data from the MIBiG database into a new table of the SQL.
+6. Get Classifications for the MIBiG data.
+7. Get Classification for the NPDB data
+
+### InteractWithSQL.py
+
+### GetSqlIDs.py
+
+### InchiToSQL.py
+
+### ClassifyMibigTsv.py
+
+### MIBiGToSQL4.py
+
+### Run_pyclassyfire4.py
+
+
+## Explanation of Files
+
+### Natural_Product_Structure.sqlite
+
+### All_MIBiG_compounds_with_SMILES_and_PMID_MAS.txt
