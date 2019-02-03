@@ -127,11 +127,20 @@ It is seperated into 7 steps:
 6. Get Classifications for the MIBiG data.
 7. Get Classification for the NPDB data
 
+The scripts below are executed with the pipeline. You can however also the seperate scripts if you only want to perform a specific funtion. Do not you will likely need to edit the "if __name__ == '__main__':" part of the scripts to make them function in the way you intend.
+
 ### InteractWithSQL.py
+This script contains a bunch of functions that simplify and streamline the interaction with a sqlite database through python.
+The functions are self explanatory or explained in the docstring.
 
 ### GetSqlIDs.py
+This script has a single purpose and could also theoretically have been a single function of the pipeline. It gathers all the structure IDs from the NPDB table and adds them to a list. This list can be used by other functions to loop over all structures.
 
 ### InchiToSQL.py
+This scripts has 2 functions, on for step 2 and one for 3.
+InsertIntoSQL is meant to take the inchi-keys from a file (all_input_structures_neutralized_full_dataFile.txt) and add them to the sqlite database.
+CombineInchiKeys is used because my version of the starting SQL database has a version of the inchi-key that is split up (see explanation of file). This merges the two parts of the inchi-key and adds the necessary charge flag that it takes from the molconvert inchi-key added in step 2.
+
 
 ### ClassifyMibigTsv.py
 
@@ -143,5 +152,7 @@ It is seperated into 7 steps:
 ## Explanation of Files
 
 ### Natural_Product_Structure.sqlite
+
+### all_input_structures_neutralized_full_dataFile.txt
 
 ### All_MIBiG_compounds_with_SMILES_and_PMID_MAS.txt
