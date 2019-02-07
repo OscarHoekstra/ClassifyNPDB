@@ -112,27 +112,35 @@ def PyClassify(InchiKey):
     try:
         JSONstring = pyclassyfire.client.get_entity(InchiKey, 'json')
         JSON = json.loads(JSONstring)
+        outInchiKey = InchiKey
     except Exception as ex:
         #print(ex)
         UHFFInchiKey = InchiKey[0:15]+"UHFFFAOYSA"+InchiKey[25:27]
         try:
             JSONstring = pyclassyfire.client.get_entity(UHFFInchiKey, 'json')
             JSON = json.loads(JSONstring)
+            outInchiKey = outInchiKey = UHFFInchiKey
         except Exception as ex:
             NeutralInchiKey = InchiKey[0:26]+"N"
             try:
                 JSONstring = pyclassyfire.client.get_entity(
                     NeutralInchiKey, 'json')
                 JSON = json.loads(JSONstring)
+                outInchiKey = NeutralInchiKey
             except Exception as ex:
                 NeutralUHFFInchiKey = InchiKey[0:15]+"UHFFFAOYSA-N"
                 try:
                     JSONstring = pyclassyfire.client.get_entity(
                         NeutralUHFFInchiKey, 'json')
                     JSON = json.loads(JSONstring)
+                    outInchiKey = NeutralUHFFInchiKey
                 except Exception as ex:
                     #return False if the structure could not be classified
+                    outInchiKey = False
                     return False
+    if outInchiKey != False:
+        with open('ClassyFireJsonFiles/'outInchiKey+'.json','w') as f:
+            f.write(JSONstring)
     return JSON
 
 
