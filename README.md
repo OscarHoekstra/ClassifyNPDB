@@ -1,13 +1,13 @@
 # Extended Natural Product Database Pipeline (eNPDB)
 
 I created this project during my Bachelor Thesis at the Bioinformatics group at the WUR. 
-My main research goal was to try to improve the linking of NPS (Natural Product Structures) to BGCs (Biosynthetic Gene Clusters) through classification. 
+My main research goal was to try to improve the linking of NPS (Natural Product Structures) to BGCs (Biosynthetic Gene Clusters) through classification. To do this I created a pipeline that i called eNPDB (extended Natural Product Database) that is mostly split up into two parts, NPS and MIBiG. The goal was to collect the necessary data and obtain classification of the MIBiG structures to compare them to the BGC classification. Furthermore, it needed to be able to add classifications to the in-house NPDB (explained below). The pipeline was specifically created for my use case and the data I had access to, but I made it modular so you can enable or disable parts to make it run with your dataset and produce and output of your desire.
 
-I will start with an in-house SQL database with information about a lot of structures (currently ~300.000). This includes things like an identifier, mass, inchi, inchi-key, smile, mol-formula and class data. It is however only necessary to have identifiers and a inchi-key, or a seperate file with inchi-keys for each identifier to run the pipeline.
+The pipeline will automatically retrieve the BGC data from the [MIBiG](https://mibig.secondarymetabolites.org/repository.html) database. This database contains both information about biosynthetic gene clusters and the chemical compounds produced from these clusters. This is crucial because it allows us to link the classification of the clusters to the classification of the structures. eNPDB adds each structure with information about the BGC it belongs to, including class data, and the necessary information about the structure itself to a SQL database.
 
-For the BGC data i'm going to use the [MIBiG](https://mibig.secondarymetabolites.org/repository.html) database. This database contains both information on the chemical compounds produced from the pathway as well as class data about the BGC.
+For the NPS part the pipeline can start from any list or database of InChIKeys or SMILES strings. I will however start with an in-house SQL database with information about a lot of structures (currently ~300.000). This includes things like an identifier, mass, inchi, inchi-key, smile, mol-formula and class data. It is however only necessary to have identifiers and a inchi-key, or a seperate file with inchi-keys for each identifier to run the pipeline.                                   
 
-ClassyFire is then used to automatically produce classifications of structures of both databases. The MIBiG data will then have BGC class data and structure class data. These classifications can be compared hopefully be used to improve the linking between BGCs and Natural Products.
+ClassyFire is then used to automatically produce classifications of structures of both databases. The MIBiG data will then have BGC class data and structure class data. These classifications can be compared and hopefully be used to improve the linking between BGCs and Natural Products.
 
 ## Getting Started
 
@@ -19,13 +19,22 @@ To run this pipeline or to make use of the scripts, you will need Python3 and Sq
 Since many of the scripts use f-Strings it is recommended that you use Python 3.6 or higher. Otherwise all these f-Strings will not work and need to be eddited to an older way to format strings.
 The version of SQlite3 should not matter, but I used the latest (SQLite version 3.26.0 (2018-12-01))
 
-There are also two python packages required: requests and rdkit.
+There are also three python packages required: requests , rdkit and pyclassyfire.
 I recommend setting up a conda enviroment with the packages.
 ```
 #linux:
 #NOTE: replace 'myenv' with your environment name of choice 
 conda create -n myenv python=3.7.2 requests rdkit
 conda activate myenv
+```
+
+Then go into your working directory and use the following commands to download and install pyclassyfire.
+Since requests is a dependency of pyclassyfire, you could have left it out in the conda create command and it would still install it here.
+```
+#linux:
+git clone https://github.com/JamesJeffryes/pyclassyfire.git
+cd pyclassyfire
+python setup.py install
 ```
 
 ### Installing
