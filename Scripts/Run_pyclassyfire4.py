@@ -14,7 +14,6 @@ import re
 import pickle
 from Scripts import GetSqlIDs, InteractWithSQL
 import os
-sys.path.insert(0, '/mnt/scratch/hoeks102/Thesis_Bsc/ClassyFireAPI_test')
 import pyclassyfire.client
 
 def JoinList(LIST):

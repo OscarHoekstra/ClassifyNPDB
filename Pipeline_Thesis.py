@@ -11,6 +11,7 @@ import sys
 import config
 from Scripts import GetSqlIDs, InchiToSQL, ClassifyMibigTsv
 from Scripts import MIBiGToSQL4, Run_pyclassyfire4
+from Scripts import InteractWithSQL as Sql
 import pickle
 
 
@@ -72,8 +73,7 @@ if __name__ == "__main__":
 
 
     if 2 not in SkipSteps:
-#2 Get Inchi Keys from Sam/Rutger, Input into NPDB and combine 2
-#seperate inchi_keys in NPDB into one.
+#2 Get Inchi Keys from Sam/Rutger and input into NPDB
         print("_____Starting Step 2")
         PrintTime()
         InchiToSQL.main(cfg['InchiKeyFile'],cfg['SQLPath'],
@@ -83,10 +83,21 @@ if __name__ == "__main__":
 
 
     if 3 not in SkipSteps:
-#3 Put all of MIBiG into SQL Database and translate SMILES to Inchi_keys.
+#3 Combine two seperate inchi_keys in NPDB into one.
+        print("_____Starting Step 3")
+        PrintTime()
+        conn, c = Sql.Connect(cfg['SQLPath'])
+        InchiToSQL.CombineInchiKeys(c,cfg['NPDBtable'],cfg['structure_id'])
+        Sql.Close(conn)
+        Interval,start = interval(start)
+        print("_____Step 3 took "+Interval)
+
+
+    if 4 not in SkipSteps:
+#4 Put all of MIBiG into SQL Database and translate SMILES to Inchi_keys.
 #  Then add smiles obtained from Michelle Schorn and get the classifications
 #  with ClassyFire.
-        print("_____Starting Step 3")
+        print("_____Starting Step 4")
         PrintTime()
         #Adding Smiles from tsv to mibig database
         MibigCompoundDict = ClassifyMibigTsv.LoadMibigTsv(cfg['MibigSmilesFile'])
@@ -97,12 +108,12 @@ if __name__ == "__main__":
 
 
         Interval,start = interval(start)
-        print("_____Step 3 took "+Interval)
+        print("_____Step 4 took "+Interval)
 
 
-    if 4 not in SkipSteps:
-#4 Run ClassyFire on NPDB and put results back into database
-        print("_____Starting Step 4")
+    if 5 not in SkipSteps:
+#5 Run ClassyFire on NPDB and put results back into database
+        print("_____Starting Step 5")
         PrintTime()
         ToClassify = Run_pyclassyfire4.GetToClassify(
             cfg['RedoClassify'],
@@ -122,7 +133,7 @@ if __name__ == "__main__":
             Run_pyclassyfire4.AddColumns(cfg['SQLPath'],cfg['NPDBtable'])
             for Batch in BatchedToClassify:
                 Run_pyclassyfire4.main(Batch, cfg['SQLPath'],
-                    cfg['NPDBtable'],InchiColumn="inchi_key",
+                    cfg['NPDBtable'],InchiColumn=cfg['InchiKeyToClassify'],
                     Batched = True, TimeStamp = cfg['StartTimestamp'])
                 for item in Batch:
                     ToClassify.remove(item)
@@ -139,10 +150,10 @@ if __name__ == "__main__":
             print("You seem to have interupted the program while it was running PyClassyFire")
             print("All batches that have finished have been saved to the SQL database")
         Interval,start = interval(start)
-        print("_____Step 4 took "+Interval)
+        print("_____Step 5 took "+Interval)
 
-    if 5 not in SkipSteps:
-#5 Ending pipeline with print functions
+    if 6 not in SkipSteps:
+#6 Ending pipeline with print functions
         ScriptEnd = time.time()
         print("Pipeline Finished!")
         print("The whole script took: "+str(round(ScriptEnd - cfg['ScriptStartingTime']))+ " Seconds")
