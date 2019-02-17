@@ -152,6 +152,7 @@ CombineInchiKeys is used because my version of the starting SQL database has a v
 
 
 ### ClassifyMibigTsv.py
+The original goal of this script was to classify all of the SMILES present in the MIBiG database. For the final pipeline this script is only used because it contains a function that I could use to create a dictionary of the file All_MIBiG_compounds_with_SMILES_and_PMID_MAS.txt. The dictionary has compoundID_compoundName as key and the SMILES as value.
 
 ### MIBiGToSQL4.py
 
