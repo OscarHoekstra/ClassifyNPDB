@@ -5,7 +5,7 @@ My main research goal was to try to improve the linking of NPS (Natural Product 
 
 The pipeline will automatically retrieve the BGC data from the [MIBiG](https://mibig.secondarymetabolites.org/repository.html) database. This database contains both information about biosynthetic gene clusters and the chemical compounds produced from these clusters. This is crucial because it allows us to link the classification of the clusters to the classification of the structures. eNPDB adds each structure with information about the BGC it belongs to, including class data, and the necessary information about the structure itself to a SQL database.
 
-For the NPS part the pipeline can start from any list or database of InChIKeys or SMILES strings. I will however start with an in-house SQL database with information about a lot of structures (currently ~300.000). This includes things like an identifier, mass, inchi, inchi-key, smile, mol-formula and class data. It is however only necessary to have identifiers and a inchi-key, or a seperate file with inchi-keys for each identifier to run the pipeline.                                   
+For the NPS part the pipeline can start from any list or database of InChIKeys or SMILES strings. I will however start with an in-house SQL database with information about a lot of structures (currently ~300.000). This includes things like an identifier, mass, inchi, inchi-key, smile, mol-formula and class data. It is however only necessary to have identifiers and an InChIKey, or a seperate file with InChIKeys for each identifier to run the pipeline.                                   
 
 ClassyFire is then used to automatically produce classifications of structures of both databases. The MIBiG data will then have BGC class data and structure class data. These classifications can be compared and hopefully be used to improve the linking between BGCs and Natural Products.
 
@@ -98,7 +98,7 @@ Arguments: ['Pipeline_Thesis.py', 'Running pipeline with a new version of the MI
 
 * [Python3](https://www.python.org/) - All Scripts
 * [Sqlite3](https://www.sqlite.org/index.html) - Database Management
-* [RDKit](https://www.rdkit.org/docs/api-docs.html) - Python API to generate SMILES and Inchi-Keys
+* [RDKit](https://www.rdkit.org/docs/api-docs.html) - Python API to generate SMILES and InChIKeys
 * [ClassyFire](http://classyfire.wishartlab.com/) - Automated structural classification of chemical entities
 * [pyclassyfire](https://github.com/JamesJeffryes/pyclassyfire) - Python API with helper functions for using ClassyFire
 * [MIBiG](https://mibig.secondarymetabolites.org/repository.html) - Biosynthetic Gene Cluster Data
@@ -119,7 +119,7 @@ All the code in this project was written by me (Oscar), but I had a lot of help 
 * Justin van der Hooft: Thesis Supervisor
 * Marnix Medema: Thesis Supervisor and Lead author MIBiG
 * Sam Stokman: For the NPDB database and support with my thesis
-* Rutger Ozinga: For the NPDB Inchi-keys and support with my thesis
+* Rutger Ozinga: For the NPDB InChIKeys and support with my thesis
 * Michelle Schorn: For the extended MIBiG SMILES file.
 
 ----------------------------------------------------------------------------------------------------------------------------------------
@@ -129,8 +129,8 @@ All the code in this project was written by me (Oscar), but I had a lot of help 
 This is the main script that runs the pipeline and in which the other scripts are used.
 It is seperated into 7 steps:
 1. Retrieving a list of the present structure identifiers from the SQL database. This list is used by the other scripts.
-2. Load a file with (molconvert) inchi-keys for each identifier and add them to the SQL database.
-3. Combine a split inchi-key back into a single one. (see explanation of Natural_Product_Structure.sqlite)
+2. Load a file with (molconvert) InChIKeys for each identifier and add them to the SQL database.
+3. Combine a split InChIKeys back into a single one. (see explanation of Natural_Product_Structure.sqlite)
 4. Create a dictionary with structures present in the MIBiG SMILES TSV file
 5. Load the important data from the MIBiG database into a new table of the SQL.
 6. Get Classifications for the MIBiG data.
@@ -147,8 +147,8 @@ This script has a single purpose and could also theoretically have been a single
 
 ### InchiToSQL.py
 This scripts has 2 functions, on for step 2 and one for 3.
-InsertIntoSQL is meant to take the inchi-keys from a file (all_input_structures_neutralized_full_dataFile.txt) and add them to the sqlite database.
-CombineInchiKeys is used because my version of the starting SQL database has a version of the inchi-key that is split up (see explanation of file). This merges the two parts of the inchi-key and adds the necessary charge flag that it takes from the molconvert inchi-key added in step 2.
+InsertIntoSQL is meant to take the InChIKeys from a file (all_input_structures_neutralized_full_dataFile.txt) and add them to the sqlite database.
+CombineInchiKeys is used because my version of the starting SQL database has a version of the InChIKey that is split up (see explanation of file). This merges the two parts of the InChIKey and adds the necessary charge flag that it takes from the molconvert InChIKey added in step 2.
 
 
 ### ClassifyMibigTsv.py
@@ -159,35 +159,62 @@ The main function of the MIBiGToSQL4 script is to add a table to the sqlite data
 
 Since each BGC might contain multiple structures, a new identifier is created from BGCaccession_CompoundName. The script then filters data out of the json and adds them to appropriate columns in the sqlite database.
 
-I initially only wanted to use inchi-keys for classyfire. That is why I also used this script to add different versions of rdkit generated smiles and inchi-keys to the table. These may still be of limited use and that is why I left them in the final version of the pipeline. 
+I initially only wanted to use InChIKeys for classyfire. That is why I also used this script to add different versions of rdkit generated SMILES and InChIKeys to the table. These may still be of limited use and that is why I left them in the final version of the pipeline. 
 
 ### Run_pyclassyfire4.py
 Run_pyclassyfire4 is split into 2 main funtions, one for the MIBiG data and one for the NPS data. Altough both of these parts have the same goal of retrieving classifications for the structures, they function quiet differently and I will thus explain them seperately below.
 Both parts contain an option to perform the classification in batches of a user defined size. This is done because if a crash occurs during the classification for any reason it is possible that previous classifications are not saved. It is therefore highly recommended to activate this option since the classification takes a decently large amount of time and batching only increases this time by a negligible amount.
 The batching works by creating a file (ToClassify.txt) with the structures that need to be classified (done automatically). Once the classification of a batch has been finished and saved, the structures are removed from the file. If an error occurs and you try to run the script again it will try to load the file and see which structures still need to be classified. The problem with this is that if you change the data without deleting ToClassify.txt or changing the RedoClassify to true, it will not recognise that there are new structures to classify. I recommend setting RedoClassify to True unless you have crashes.
 
-This script also contains some old functions that aren't used any longer. They may however still be usefull for, as an example, testing the speed of ClassyFire with your setup (TestClassyfireSpeed()) or getting quick classifications for a list of inchi-keys (PyClassifyList()).
+This script also contains some old functions that aren't used any longer. They may however still be usefull for, as an example, testing the speed of ClassyFire with your setup (TestClassyfireSpeed()) or getting quick classifications for a list of InChIKeys (PyClassifyList()).
 
 * MIBIG
-For the MIBiG data the classifications are retrieved with the SMILES string. This usually takes longer because while with inchi-keys you can retrieve existing classifications, with SMILES ClassyFire first translates them to an inchi-key tries to find an existing classification and if that doesn't exist it tries to create a classification.
-I created a way to prepare this classification beforehand to decrease running time of the pipeline. PyClassifyStructureList() is used to submit a list of SMILES or INCHIs to ClassyFire and for each structure a query_id is created and saved. Once the classification has finished this query_id can then be used to retrieve the results of the classification. If the SMILES string did not give a classification it will try to use the rdkit_inchi_key. This is because I found that sometimes the SMILES did not work but the inchi-key created from that SMILES would give a ClassyFire result. This helps get a bit better performance in retrieving classification for the MIBiG classifications.
+For the MIBiG data the classifications are retrieved with the SMILES string. This usually takes longer because while with inchi-keys you can retrieve existing classifications, with SMILES ClassyFire first translates them to an InChIKey tries to find an existing classification and if that doesn't exist it tries to create a classification.
+I created a way to prepare this classification beforehand to decrease running time of the pipeline. PyClassifyStructureList() is used to submit a list of SMILES or InChIs to ClassyFire and for each structure a query_id is created and saved. Once the classification has finished this query_id can then be used to retrieve the results of the classification. If the SMILES string did not give a classification it will try to use the rdkit_inchi_key. This is because I found that sometimes the SMILES did not work but the InChIKey created from that SMILES would give a ClassyFire result. This helps get a bit better performance in retrieving classification for the MIBiG classifications.
 
 * NPS
-NPS classifications are retrieved only with inchi-keys for 2 reasons, this was my initial goal so I programmed it first and I didn't have time in my project to add automatic classification retrieving through SMILES and secondly, the NPS database is really big and it would take a huge amount of time to create classifications for each structure.
-The inchi-key is retrieved from the database and the classification is retrieved with the PyClassify function. This uses pyclassyfire to basically search for the json file available for the inchi-key. Because I had so many problems with the inchi-keys and retrieving classifications I decided it was a good idea to try every possible inchi-key for the structure that I could think off. This meant that if I couldn't find a classification I would generate a inchi-key without charge, stereochemistry or without both and try to get results with those. This might not be as accurate since technically it could result in slightly different classifications than the original structure should have, but I think it is better than no classification.
-The classification results are also saved as a seperate file with the inchi-key used as name.
+NPS classifications are retrieved only with InChIKeys for 2 reasons, this was my initial goal so I programmed it first and I didn't have time in my project to add automatic classification retrieving through SMILES and secondly, the NPS database is really big and it would take a huge amount of time to create classifications for each structure.
+The InChIKey is retrieved from the database and the classification is retrieved with the PyClassify function. This uses pyclassyfire to basically search for the json file available for the InChIKey. Because I had so many problems with the InChIKeys and retrieving classifications I decided it was a good idea to try every possible InChIKey for the structure that I could think off. This meant that if I couldn't find a classification I would generate a InChIKey without charge, stereochemistry or without both and try to get results with those. This might not be as accurate since technically it could result in slightly different classifications than the original structure should have, but I think it is better than no classification.
+The classification results are also saved as a seperate file with the InChIKey used as name.
 
 ## Explanation of Files
 
 ### Natural_Product_Structure.sqlite
+This is the sqlite database that I started with and appended to. It was created by Sam Stokman and at the time of writing she is working on a new version. According to what I have heard my pipeline should still work with the new version altough it might need minor changes like updated column names. This database contained 3 tables: data_source, structure and structure_has_data_source.
+
+1. data_source
+This table has 2 column: source_name and nr_of_structures.
+This table tells the reader how many structures come from each data source and thus the columns are self-explanatory
+I don't use this table in my project.
+
+2. structure
+Columns: structure_id, monoisotopic_mass, inchi, smile, inchi_key2, inchi_key1, molecular_formula, kingdom, superclass, class, subclass.
+   - structure_id is an unique identifier formatted as: NP_ID_# with # being any number counting up from 1.
+   - [inchi](https://en.wikipedia.org/wiki/International_Chemical_Identifier) is a textual identifier for a structure and formated as: InChI=......
+   - smile contains SMILES strings which are another way to write down structures.
+   - inchi_key2 and inchi_key1 contain a split up version of an [InChIKey](https://en.wikipedia.org/wiki/International_Chemical_Identifier#InChIKey) which is a hashed version of the InChI.
+   - inchi_key1 contains the first 14 characters of the key containing the connectivity information.
+   - inchi_key2 contain the following 8 containing the stereochemistry information. Because of this weird split up version the charge information is lost and in a future version of the database a full InChIKey will be given, but I had to adapt my script around this.
+   - kingdom -> subclass are classification imported from the sources that the rest of the data originates from. We didn't know the quality of this classification and we also wanted to other data that ClassyFire gives us, so that is why we add classification data to this. When we have the new classifications data we can also compare it to the old class data.
+
+3. structure_has_data_source
+This table contains 4 columns: structure_source_id, structure_id, source_id and source name.
+This links all structures to where they originate from. I didn't use this table in my project.
 
 ### all_input_structures_neutralized_full_dataFile.txt
+This is a space-seperated file with 5 columns. It contains the the InChIKeys created with rdkit by Rutger Ozinga.
+The first column always contains a NP_ID. This is proceeded by the SMILES of this structure and if this structure is charged another neutral version of this SMILES.
+Then follows 1 or 2 InChIKeys translated from the SMILES with RDKit.
 
 ### All_MIBiG_compounds_with_SMILES_and_PMID_MAS.txt
+This is a tab-seperated with 4 columns that I create from an excel file. It contains the new and updates smiles of the MIBiG database created by Michelle Schorn.
+The first column contains the MIBiG accession, the second the compound name, the third the SMILES and the last PMID/DOI.
 
 ### ToClassify.txt
 This file is a pickled/byte-data version of the ToClassify list which contains the structure_ids which haven't been classified yet. The file can be read by  using pickle.load().
 
 ### PickledQueryIDDict.txt
+This file a pickled/byte-data version of the dictionary that has structure_id as key and ClassyFire queryid as value. It can be used to retrieve the classifications of the structures which you submitted earlier.You can load it with pickle.load().
 
 ### FailedStructures
+This contains the structures_ids which for one reason or another caused an error while trying to get classifications.
