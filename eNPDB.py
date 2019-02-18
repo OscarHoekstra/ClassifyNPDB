@@ -111,7 +111,7 @@ if __name__ == "__main__":
 #5 Put all of MIBiG into SQL Database and translate SMILES to Inchi_keys.
         print("_____Starting Step 5")
         PrintTime()
-        MIBiGToSQL4.main(cfg['SQLPath'],cfg['MibigTable'],MibigCompoundDict)
+        MIBiGToSQL4.main(cfg['SQLPath'],cfg['MibigTable'],MibigCompoundDict,FailMax = cfg['MaxMibigFails'])
         Interval,start = interval(start)
         print("_____Step 5 took "+Interval)
 
