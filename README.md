@@ -164,14 +164,18 @@ I initially only wanted to use inchi-keys for classyfire. That is why I also use
 ### Run_pyclassyfire4.py
 Run_pyclassyfire4 is split into 2 main funtions, one for the MIBiG data and one for the NPS data. Altough both of these parts have the same goal of retrieving classifications for the structures, they function quiet differently and I will thus explain them seperately below.
 Both parts contain an option to perform the classification in batches of a user defined size. This is done because if a crash occurs during the classification for any reason it is possible that previous classifications are not saved. It is therefore highly recommended to activate this option since the classification takes a decently large amount of time and batching only increases this time by a negligible amount.
-The batching works by creating a file with the structures that need to be classified (done automatically). Once the classification of a batch has been finished and saved, the structures are removed from the file. If an error occurs and you try to run the script again it will try to load the file and see which structures still need to be classified. The problem with this is that if you change the data without deleting the 
+The batching works by creating a file (ToClassify.txt) with the structures that need to be classified (done automatically). Once the classification of a batch has been finished and saved, the structures are removed from the file. If an error occurs and you try to run the script again it will try to load the file and see which structures still need to be classified. The problem with this is that if you change the data without deleting ToClassify.txt or changing the RedoClassify to true, it will not recognise that there are new structures to classify. I recommend setting RedoClassify to True unless you have crashes.
 
-It also contains some old functions that aren't used any longer. They may however still be usefull for, as an example, testing the speed of ClassyFire with your setup (TestClassyfireSpeed()) or getting quick classifications for a list of inchi-keys (PyClassifyList()).
+This script also contains some old functions that aren't used any longer. They may however still be usefull for, as an example, testing the speed of ClassyFire with your setup (TestClassyfireSpeed()) or getting quick classifications for a list of inchi-keys (PyClassifyList()).
 
 * MIBIG
-
+For the MIBiG data the classifications are retrieved with the SMILES string. This usually takes longer because while with inchi-keys you can retrieve existing classifications, with SMILES ClassyFire first translates them to an inchi-key tries to find an existing classification and if that doesn't exist it tries to create a classification.
+I created a way to prepare this classification beforehand to decrease running time of the pipeline. PyClassifyStructureList() is used to submit a list of SMILES or INCHIs to ClassyFire and for each structure a query_id is created and saved. Once the classification has finished this query_id can then be used to retrieve the results of the classification. If the SMILES string did not give a classification it will try to use the rdkit_inchi_key. This is because I found that sometimes the SMILES did not work but the inchi-key created from that SMILES would give a ClassyFire result. This helps get a bit better performance in retrieving classification for the MIBiG classifications.
 
 * NPS
+NPS classifications are retrieved only with inchi-keys for 2 reasons, this was my initial goal so I programmed it first and I didn't have time in my project to add automatic classification retrieving through SMILES and secondly, the NPS database is really big and it would take a huge amount of time to create classifications for each structure.
+The inchi-key is retrieved from the database and the classification is retrieved with the PyClassify function. This uses pyclassyfire to basically search for the json file available for the inchi-key. Because I had so many problems with the inchi-keys and retrieving classifications I decided it was a good idea to try every possible inchi-key for the structure that I could think off. This meant that if I couldn't find a classification I would generate a inchi-key without charge, stereochemistry or without both and try to get results with those. This might not be as accurate since technically it could result in slightly different classifications than the original structure should have, but I think it is better than no classification.
+The classification results are also saved as a seperate file with the inchi-key used as name.
 
 ## Explanation of Files
 
@@ -180,3 +184,10 @@ It also contains some old functions that aren't used any longer. They may howeve
 ### all_input_structures_neutralized_full_dataFile.txt
 
 ### All_MIBiG_compounds_with_SMILES_and_PMID_MAS.txt
+
+### ToClassify.txt
+This file is a pickled/byte-data version of the ToClassify list which contains the structure_ids which haven't been classified yet. The file can be read by  using pickle.load().
+
+### PickledQueryIDDict.txt
+
+### FailedStructures
