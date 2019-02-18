@@ -23,6 +23,10 @@ def Settings():
         # Step 1 can not be skipped as its necessary for further steps
         # and it is also really short.
         "SkipSteps": (0,),
+        
+        # The amount of BGCs that should be missing before the script will
+        # assume it is at the end and stop:
+        "MaxMibigFails": 10,
 
         # Do the classification of the NPDB in batches? (Classifications are
         # saved in between, crashes are less severe but more batches take
@@ -35,6 +39,7 @@ def Settings():
         # might have updated
         # Set this to true to always re-do the classification.
         "RedoClassify": True,
+
 
 # General Constants
         # Starting time of the script is set automatically and used to
