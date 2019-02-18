@@ -155,9 +155,23 @@ CombineInchiKeys is used because my version of the starting SQL database has a v
 The original goal of this script was to classify all of the SMILES present in the MIBiG database. For the final pipeline this script is only used because it contains a function that I could use to create a dictionary of the file All_MIBiG_compounds_with_SMILES_and_PMID_MAS.txt. The dictionary has compoundID_compoundName as key and the SMILES as value.
 
 ### MIBiGToSQL4.py
+The main function of the MIBiGToSQL4 script is to add a table to the sqlite database with all the important data out of the MIBiG database. It does this by interating through all possible BGC codes (BGC#######) and trying to download the json file from https://mibig.secondarymetabolites.org/repository/BGC#######/BGC#######.json. Since I don't know another way of detecting the size and thus the end of the MIBiG repository, this is done until 10 BGCs in a row (configurable) aren't found. This is most likely the end of the database but checking is adviced.
+
+Since each BGC might contain multiple structures, a new identifier is created from BGCaccession_CompoundName. The script then filters data out of the json and adds them to appropriate columns in the sqlite database.
+
+I initially only wanted to use inchi-keys for classyfire. That is why I also used this script to add different versions of rdkit generated smiles and inchi-keys to the table. These may still be of limited use and that is why I left them in the final version of the pipeline. 
 
 ### Run_pyclassyfire4.py
+Run_pyclassyfire4 is split into 2 main funtions, one for the MIBiG data and one for the NPS data. Altough both of these parts have the same goal of retrieving classifications for the structures, they function quiet differently and I will thus explain them seperately below.
+Both parts contain an option to perform the classification in batches of a user defined size. This is done because if a crash occurs during the classification for any reason it is possible that previous classifications are not saved. It is therefore highly recommended to activate this option since the classification takes a decently large amount of time and batching only increases this time by a negligible amount.
+The batching works by creating a file with the structures that need to be classified (done automatically). Once the classification of a batch has been finished and saved, the structures are removed from the file. If an error occurs and you try to run the script again it will try to load the file and see which structures still need to be classified. The problem with this is that if you change the data without deleting the 
 
+It also contains some old functions that aren't used any longer. They may however still be usefull for, as an example, testing the speed of ClassyFire with your setup (TestClassyfireSpeed()) or getting quick classifications for a list of inchi-keys (PyClassifyList()).
+
+* MIBIG
+
+
+* NPS
 
 ## Explanation of Files
 
