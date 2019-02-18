@@ -84,14 +84,15 @@ def GetSubclass(GP):
     else:
         return OutList
 
-def main(sqlite_file, table_name, CompoundDict = None):
+def main(sqlite_file, table_name, CompoundDict = None, FailMax = 10):
     """Creates a new table in a SQlite file to add the MIBiG data to.
     Keyword Argument:
         SqliteFile -- Path of the SQlite database to add the MIBiG data to
         MIBiGtableName -- Name of the to be created or edited table
         CompoundDict -- Dictionary with compound ids+names as keys and
                         smiles as values.
-
+        FailMax -- How many structures in a row should be missing before it
+                   assumes it is at the end of the BGCs
     """
     StartTime = time.time()
     id_column = 'compound_id' # name of the column with the primary key
@@ -116,9 +117,6 @@ def main(sqlite_file, table_name, CompoundDict = None):
 # in a (new) table named 'mibig'
     BGCnr = 1 # initiate counter for checking if BGCs exits.
     FailCounter = 0 # counter for how many BGCs in a row are missing
-    FailMax = 10 # if this many structures in a row are missing, the
-    # script will assume it has reached the end of the mibig database
-    # and stop
     FailedBGCs = [] # initalising a list to store BGC that have failed
     QueryDict = {} # initialise a dictionary with which the SQL filling
                    # command will be constructed
