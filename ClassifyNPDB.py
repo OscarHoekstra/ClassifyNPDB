@@ -111,7 +111,11 @@ if __name__ == "__main__":
 #5 Put all of MIBiG into SQL Database and translate SMILES to Inchi_keys.
         print("_____Starting Step 5")
         PrintTime()
-        MIBiGToSQL4.main(cfg['SQLPath'],cfg['MibigTable'],MibigCompoundDict,FailMax = cfg['MaxMibigFails'])
+        MIBiGToSQL4.main(cfg['SQLPath'],
+                         cfg['MibigTable'],
+                         cfg['MibigCompoundID'],
+                         MibigCompoundDict,
+                         FailMax = cfg['MaxMibigFails'])
         Interval,start = interval(start)
         print("_____Step 5 took "+Interval)
 
@@ -122,7 +126,11 @@ if __name__ == "__main__":
         PrintTime()
         with open(cfg['PQueryID'],"rb") as f:
             QueryIDDict = pickle.load(f)
-        Run_pyclassyfire4.mainMIBIG(QueryIDDict,cfg['SQLPath'],cfg['MibigTable'],TimeStamp = cfg['StartTimestamp'])
+        Run_pyclassyfire4.mainMIBIG(QueryIDDict,
+                                    cfg['SQLPath'],
+                                    cfg['MibigTable'],
+                                    IDcolumn = cfg['MibigCompoundID'],
+                                    TimeStamp = cfg['StartTimestamp'])
         Interval,start = interval(start)
         print("_____Step 6 took "+Interval)
 
@@ -148,9 +156,13 @@ if __name__ == "__main__":
         try:
             Run_pyclassyfire4.AddColumns(cfg['SQLPath'],cfg['NPDBtable'])
             for Batch in BatchedToClassify:
-                Run_pyclassyfire4.main(Batch, cfg['SQLPath'],
-                    cfg['NPDBtable'],InchiColumn=cfg['InchiKeyToClassify'],
-                    Batched = True, TimeStamp = cfg['StartTimestamp'])
+                Run_pyclassyfire4.main(Batch,
+                                       cfg['SQLPath'],
+                                       cfg['NPDBtable'],
+                                       IDcolumn = cfg['structure_id'],
+                                       InchiColumn = cfg['InchiKeyToClassify'],
+                                       Batched = True,
+                                       TimeStamp = cfg['StartTimestamp'])
                 for item in Batch:
                     ToClassify.remove(item)
                 with open(cfg['ToClassifyFile'], 'wb') as f:

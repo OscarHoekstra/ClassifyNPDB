@@ -84,7 +84,7 @@ def GetSubclass(GP):
     else:
         return OutList
 
-def main(sqlite_file, table_name, CompoundDict = None, FailMax = 10):
+def main(sqlite_file, table_name, IDcolumn = 'column_id', CompoundDict = None, FailMax = 10):
     """Creates a new table in a SQlite file to add the MIBiG data to.
     Keyword Argument:
         SqliteFile -- Path of the SQlite database to add the MIBiG data to
@@ -95,7 +95,7 @@ def main(sqlite_file, table_name, CompoundDict = None, FailMax = 10):
                    assumes it is at the end of the BGCs
     """
     StartTime = time.time()
-    id_column = 'compound_id' # name of the column with the primary key
+    id_column = IDcolumn # name of the column with the primary key
     # names of the new columns
     column_names = ['compound_name','biosyn_class','biosyn_subclass',\
     'chem_synonyms','chem_target','molecular_formula','mol_mass',\

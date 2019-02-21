@@ -23,7 +23,7 @@ def Settings():
         # Step 1 can not be skipped as its necessary for further steps
         # and it is also really short.
         "SkipSteps": (0,),
-        
+
         # The amount of BGCs that should be missing before the script will
         # assume it is at the end and stop:
         "MaxMibigFails": 10,
@@ -85,7 +85,7 @@ def Settings():
         "MibigTable": 'mibig',#standard:'mibig'
 
         # Name of the column with the compound IDs:
-        "compound_id": 'compound_id', #standard:'compound_id'
+        "MibigCompoundID": 'compound_id', #standard:'compound_id'
 
 
 # Settings about files that will be outputted

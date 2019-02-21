@@ -267,9 +267,10 @@ def AddColumns(sqlite_file, table_name):
 
 
 def main(IDList, SqliteFile, TableName,
-         InchiColumn="inchi_key",
-         Batched = False,
-         TimeStamp = 000000):
+        IDcolumn = 'structure_id'
+        InchiColumn="inchi_key",
+        Batched = False,
+        TimeStamp = 000000):
     """Run Classyfire on all inchi-keys of a column in a SQlite table
 
     Keyword Arguments:
@@ -282,7 +283,7 @@ def main(IDList, SqliteFile, TableName,
     """
     sqlite_file = SqliteFile    # path of the sqlite database file
     table_name = TableName   # name of the table to be interacted with
-    id_column = 'structure_id' # name of the PRIMARY KEY column
+    id_column = IDcolumn # name of the PRIMARY KEY column
     inchi_column_name = InchiColumn # name of the column with the inchi_keys
     # name of the new classification column
     columns = ['cf_direct_parent','cf_kingdom','cf_superclass',\
@@ -420,8 +421,9 @@ def main(IDList, SqliteFile, TableName,
 
 
 def mainMIBIG(QueryIDDict, SqliteFile, TableName,
-         Batched = False,
-         TimeStamp = 000000):
+        IDcolumn = 'compound_id'
+        Batched = False,
+        TimeStamp = 000000):
     """Run Classyfire on all smiles of a column in a SQlite table
 
     Keyword Arguments:
@@ -435,7 +437,7 @@ def mainMIBIG(QueryIDDict, SqliteFile, TableName,
     """
     sqlite_file = SqliteFile    # path of the sqlite database file
     table_name = TableName   # name of the table to be interacted with
-    id_column = 'compound_id' # name of the PRIMARY KEY column
+    id_column = IDcolumn # name of the PRIMARY KEY column
     compound_name_column = 'compound_name' # name of the compound name
     default_value = 'NA'
     # name of the new classification column
