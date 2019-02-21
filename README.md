@@ -1,9 +1,9 @@
-# Extended Natural Product Database Pipeline (eNPDB)
+# Classify Natural Product Database (ClassifyNPDB)
 
 I created this project during my Bachelor Thesis at the Bioinformatics group at the WUR. 
-My main research goal was to try to improve the linking of NPS (Natural Product Structures) to BGCs (Biosynthetic Gene Clusters) through classification. To do this I created a pipeline that i called eNPDB (extended Natural Product Database) that is mostly split up into two parts, NPS and MIBiG. The goal was to collect the necessary data and obtain classification of the MIBiG structures to compare them to the BGC classification. Furthermore, it needed to be able to add classifications to the in-house NPDB (explained below). The pipeline was specifically created for my use case and the data I had access to, but I made it modular so you can enable or disable parts to make it run with your dataset and produce and output of your desire.
+My main research goal was to try to improve the linking of NPS (Natural Product Structures) to BGCs (Biosynthetic Gene Clusters) through classification. To do this I created a pipeline that i called classifyNPDB (Classify Natural Product Database) that is mostly split up into two parts, NPS and MIBiG. The goal was to collect the necessary data and obtain classification of the MIBiG structures to compare them to the BGC classification. Furthermore, it needed to be able to add classifications to the in-house NPDB (explained below). The pipeline was specifically created for my use case and the data I had access to, but I made it modular so you can enable or disable parts to make it run with your dataset and produce and output of your desire.
 
-The pipeline will automatically retrieve the BGC data from the [MIBiG](https://mibig.secondarymetabolites.org/repository.html) database. This database contains both information about biosynthetic gene clusters and the chemical compounds produced from these clusters. This is crucial because it allows us to link the classification of the clusters to the classification of the structures. eNPDB adds each structure with information about the BGC it belongs to, including class data, and the necessary information about the structure itself to a SQL database.
+The pipeline will automatically retrieve the BGC data from the [MIBiG](https://mibig.secondarymetabolites.org/repository.html) database. This database contains both information about biosynthetic gene clusters and the chemical compounds produced from these clusters. This is crucial because it allows us to link the classification of the clusters to the classification of the structures. ClassifyNPDB adds each structure with information about the BGC it belongs to, including class data, and the necessary information about the structure itself to a SQL database.
 
 For the NPS part the pipeline can start from any list or database of InChIKeys or SMILES strings. I will however start with an in-house SQL database with information about a lot of structures (currently ~300.000). This includes things like an identifier, mass, inchi, inchi-key, smile, mol-formula and class data. It is however only necessary to have identifiers and an InChIKey, or a seperate file with InChIKeys for each identifier to run the pipeline.                                   
 
@@ -125,7 +125,7 @@ All the code in this project was written by me (Oscar), but I had a lot of help 
 ----------------------------------------------------------------------------------------------------------------------------------------
 ## Explanation of Scripts
 
-### eNPDB.py
+### ClassifyNPDB.py
 This is the main script that runs the pipeline and in which the other scripts are used.
 It is seperated into 7 steps:
 1. Retrieving a list of the present structure identifiers from the SQL database. This list is used by the other scripts.
