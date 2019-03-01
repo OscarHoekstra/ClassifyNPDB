@@ -1,5 +1,6 @@
 # Classify Natural Product Database (ClassifyNPDB)
 ##README is WIP
+
 I created this project during my Bachelor Thesis at the Bioinformatics group at the WUR. 
 My main research goal was to try to improve the linking of NPS (Natural Product Structures) to BGCs (Biosynthetic Gene Clusters) through classification. To do this I created a pipeline that i called classifyNPDB (Classify Natural Product Database) that is mostly split up into two parts, NPS and MIBiG. The goal was to collect the necessary data and obtain classification of the MIBiG structures to compare them to the BGC classification. Furthermore, it needed to be able to add classifications to the in-house NPDB (explained below). The pipeline was specifically created for my use case and the data I had access to, but I made it modular so you can enable or disable parts to make it run with your dataset and produce and output of your desire.
 
