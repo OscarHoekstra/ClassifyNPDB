@@ -22,7 +22,7 @@ def Settings():
         # Add a number to this set to skip that step of the pipeline.
         # Step 1 can not be skipped as its necessary for further steps
         # and it is also really short.
-        "SkipSteps": (0,),
+        "SkipSteps": (0,4,5,6),
 
         # The amount of BGCs that should be missing before the script will
         # assume it is at the end and stop:
@@ -76,7 +76,7 @@ def Settings():
         "structure_id": 'structure_id', #standard:'structure_id'
 
         # Name of the column with inchi-keys to get classifications for:
-        "InchiKeyToClassify": 'inchi_key' #standard:'inchi_key'
+        "InchiKeyToClassify": 'inchi_key', #standard:'inchi_key'
 
 
 # Settings about the (to be created) MIBiG table in the SQL database.

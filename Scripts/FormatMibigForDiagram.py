@@ -29,24 +29,34 @@ if __name__ == "__main__":
     # the amount of values in that specific class
         # 2_biosyn_class, 3_biosyn_subclass, 23_kingdom, 24_superclass,
         # 25_class, 26_subclass
-    CountItems = [2,3,23,24,25,26]
+    CountItems = [23,24,25,26,27,28,29,30]
     DictList = []
     for k in range(len(line)):
         DictList.append({})
     Data = [x.strip().split('\t') for x in NewData]
     for line in Data:
+        print(DictList)
+        print(line[-1])
+        try:
+            DictList[2][line[2]] += 1
+            DictList[3][line[3]] += 1
+        except:
+            DictList[2][line[2]] = 1
+            DictList[3][line[3]] = 1
         for i in CountItems:
             try:
-                DictList[i][line[i]] += 1
+                DictList[i][line[i]] += float(line[-1])
             except:
-                DictList[i][line[i]] = 1
+                DictList[i][line[i]] = float(line[-1])
     for line in Data:
+        line[2] = str(round(DictList[2][line[2]])) + ': ' + line[2]
+        line[3] = str(round(DictList[3][line[3]])) + ': ' + line[3]
         for i in CountItems:
-            line[i] = str(DictList[i][line[i]]) + ': ' + line[i]
+            line[i] = str(round(DictList[i][line[i]])) + ': ' + line[i]
         FinalData.append('\t'.join(line))
 
     FinalData = [Header.strip()+'\tSize'] + FinalData
     FinalData = '\n'.join(FinalData)
-    with open('FormatedMibigOutput_v3.tsv', 'w') as f:
+    with open('Formated'+sys.argv[1], 'w') as f:
         f.write(FinalData)
     print('FormatMibigForDiagram.py has finished!')

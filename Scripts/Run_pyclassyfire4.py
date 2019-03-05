@@ -138,7 +138,7 @@ def PyClassify(InchiKey):
                     outInchiKey = False
                     return False
     if outInchiKey != False:
-        with open('ClassyFireJsonFiles/'outInchiKey+'.json','w') as f:
+        with open('ClassyFireJsonFiles/'+outInchiKey+'.json','w') as f:
             f.write(JSONstring)
     return JSON
 
@@ -267,7 +267,7 @@ def AddColumns(sqlite_file, table_name):
 
 
 def main(IDList, SqliteFile, TableName,
-        IDcolumn = 'structure_id'
+        IDcolumn = 'structure_id',
         InchiColumn="inchi_key",
         Batched = False,
         TimeStamp = 000000):
@@ -421,7 +421,7 @@ def main(IDList, SqliteFile, TableName,
 
 
 def mainMIBIG(QueryIDDict, SqliteFile, TableName,
-        IDcolumn = 'compound_id'
+        IDcolumn = 'compound_id',
         Batched = False,
         TimeStamp = 000000):
     """Run Classyfire on all smiles of a column in a SQlite table

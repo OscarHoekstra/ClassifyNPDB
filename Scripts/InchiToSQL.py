@@ -60,16 +60,16 @@ def CombineInchiKeys(cursor,table_name, id_column = 'structure_id'):
     """
     # Retrieving the structure_id, inchi-keys and the charges from the
     # molconvert inchi-keys.
-    Structures = []
+    Structures = {}
     EX = {}
     for Row in cursor.execute('SELECT structure_id, inchi_key1,'
             'inchi_key2, inchi_key_molconvert from '+table_name):
-        Structures.append(Row[0])
-        EX['inchi_key'] = Row[1]+'-'+Row[2][:8]+'SA-'+Row[3][-1]
+        Structures[Row[0]] = Row[1]+'-'+Row[2][:8]+'SA-'+Row[3][-1]
 
-    for item in Structures:
+    for key, value in Structures.items():
+        EX['inchi_key'] = value
         # Adding the combined inchi-keys with the 'hopefully' correct charge
-        WhereString = f"{id_column} = '{item}'"
+        WhereString = f"{id_column} = '{key}'"
         Sql.UpdateTable(cursor, table_name, EX, WhereString)
     return None
 
