@@ -1,4 +1,5 @@
 # Classify Natural Product Database (ClassifyNPDB)
+## README is WIP
 
 I created this project during my Bachelor Thesis at the Bioinformatics group at the WUR. 
 My main research goal was to try to improve the linking of NPS (Natural Product Structures) to BGCs (Biosynthetic Gene Clusters) through classification. To do this I created a pipeline that i called classifyNPDB (Classify Natural Product Database) that is mostly split up into two parts, NPS and MIBiG. The goal was to collect the necessary data and obtain classification of the MIBiG structures to compare them to the BGC classification. Furthermore, it needed to be able to add classifications to the in-house NPDB (explained below). The pipeline was specifically created for my use case and the data I had access to, but I made it modular so you can enable or disable parts to make it run with your dataset and produce and output of your desire.
@@ -176,6 +177,17 @@ I created a way to prepare this classification beforehand to decrease running ti
 NPS classifications are retrieved only with InChIKeys for 2 reasons, this was my initial goal so I programmed it first and I didn't have time in my project to add automatic classification retrieving through SMILES and secondly, the NPS database is really big and it would take a huge amount of time to create classifications for each structure.
 The InChIKey is retrieved from the database and the classification is retrieved with the PyClassify function. This uses pyclassyfire to basically search for the json file available for the InChIKey. Because I had so many problems with the InChIKeys and retrieving classifications I decided it was a good idea to try every possible InChIKey for the structure that I could think off. This meant that if I couldn't find a classification I would generate a InChIKey without charge, stereochemistry or without both and try to get results with those. This might not be as accurate since technically it could result in slightly different classifications than the original structure should have, but I think it is better than no classification.
 The classification results are also saved as a seperate file with the InChIKey used as name.
+
+###FormatMibigForDiagram.py
+This script is not part of the main pipeline, and is used to format an output of the mibig table so it can be used in RAWGraphs.io.
+To get an appropiate file to use as input use the following settings in SQLite: 
+```
+#SQLite
+.headers on
+.mode tabs
+.once outputfile.txt --prints the result of the following command to outputfile.txt
+SELECT * FROM mibig WHERE 1 --replace "1" with a search query to narrow results
+```
 
 ## Explanation of Files
 
