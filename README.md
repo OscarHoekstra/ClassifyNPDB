@@ -44,7 +44,7 @@ To download and install the actual scripts and necessary files of my pipeline yo
 
 ```
 #git
-git clone git://github.com/OscarHoekstra/Thesis_Bsc_Oscar.git
+git clone https://github.com/OscarHoekstra/ClassifyNPDB.git
 ```
 
 ## Running the pipeline
