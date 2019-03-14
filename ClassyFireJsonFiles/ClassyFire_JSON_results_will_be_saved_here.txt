@@ -1,0 +1,1 @@
+This folder will be filled with json files with the ClassyFire results for each structure.
