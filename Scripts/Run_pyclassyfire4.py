@@ -98,6 +98,32 @@ def TestClassyfireSpeed(FilePath):
          str(round(EndTime-StartTime)/60)+" Minutes")
 
 
+def TestQueryIDs(l):
+    """Test a list of QueryIDs and see how many return well, empty or cause an error"""
+    good = 0
+    empty = 0
+    bad = 0
+    for i in l:
+        try:
+            jsonstring = pyclassyfire.client.get_results(int(i), 'json')
+            Class = json.loads(jsonstring)
+            if len(Class['entities']) == 0:
+                empty += 1
+            elif len(Class['entities']) > 1:
+                print("WHAT?!")
+                sys.exit()                
+            else:
+                print(Class['entities'])
+                good += 1
+        except Exception as e:
+            print(e)
+            bad += 1
+        
+    print("good",good)
+    print("bad",bad)
+    print("empty",empty)
+    return None
+
 def PyClassify(InchiKey):
     """Finds the classification of a single structures and returns
     the JSON file as a dict.
