@@ -17,7 +17,7 @@ These instructions will get you a copy of the project up and running on your loc
 ### Prerequisites
 
 To run this pipeline or to make use of the scripts, you will need Python3 and Sqlite3.
-Since many of the scripts use f-Strings it is recommended that you use Python 3.6 or higher. Otherwise all these f-Strings will not work and need to be eddited to an older way to format strings.
+Since many of the scripts use f-Strings it is recommended that you use Python 3.6 or higher. Otherwise all these f-Strings will not work and need to be edited to an older way to format strings.
 The version of SQlite3 should not matter, but I used the latest (SQLite version 3.26.0 (2018-12-01))
 
 There are also three python packages required: requests , rdkit and pyclassyfire.
@@ -147,20 +147,17 @@ The functions are self explanatory or explained in the docstring.
 This script has a single purpose and could also theoretically have been a single function of the pipeline. It gathers all the structure IDs from the NPDB table and adds them to a list. This list can be used by other functions to loop over all structures.
 
 ### InchiToSQL.py
-This scripts has 2 functions, on for step 2 and one for 3.
+This scripts has 2 functions, one for step 2 and one for 3.
 InsertIntoSQL is meant to take the InChIKeys from a file (all_input_structures_neutralized_full_dataFile.txt) and add them to the sqlite database.
-CombineInchiKeys is used because my version of the starting SQL database has a version of the InChIKey that is split up (see explanation of file). This merges the two parts of the InChIKey and adds the necessary charge flag that it takes from the molconvert InChIKey added in step 2.
-
+CombineInchiKeys is used to merge two parts of a split InChIKey (see explanation of NPDB).
 
 ### ClassifyMibigTsv.py
 The original goal of this script was to classify all of the SMILES present in the MIBiG database. For the final pipeline this script is only used because it contains a function that I could use to create a dictionary of the file All_MIBiG_compounds_with_SMILES_and_PMID_MAS.txt. The dictionary has compoundID_compoundName as key and the SMILES as value.
 
 ### MIBiGToSQL4.py
-The main function of the MIBiGToSQL4 script is to add a table to the sqlite database with all the important data out of the MIBiG database. It does this by interating through all possible BGC codes (BGC#######) and trying to download the json file from https://mibig.secondarymetabolites.org/repository/BGC#######/BGC#######.json. Since I don't know another way of detecting the size and thus the end of the MIBiG repository, this is done until 10 BGCs in a row (configurable) aren't found. This is most likely the end of the database but checking is adviced.
+The main function of the MIBiGToSQL4 script is to add a table to the sqlite database with all the important data out of the MIBiG database. It does this by interating through all possible BGC codes (BGC#######) and trying to download the json file from https://mibig.secondarymetabolites.org/repository/BGC#######/BGC#######.json. 
 
 Since each BGC might contain multiple structures, a new identifier is created from BGCaccession_CompoundName. The script then filters data out of the json and adds them to appropriate columns in the sqlite database.
-
-I initially only wanted to use InChIKeys for classyfire. That is why I also used this script to add different versions of rdkit generated SMILES and InChIKeys to the table. These may still be of limited use and that is why I left them in the final version of the pipeline. 
 
 ### Run_pyclassyfire4.py
 Run_pyclassyfire4 is split into 2 main funtions, one for the MIBiG data and one for the NPS data. Altough both of these parts have the same goal of retrieving classifications for the structures, they function quiet differently and I will thus explain them seperately below.
@@ -174,9 +171,9 @@ For the MIBiG data the classifications are retrieved with the SMILES string. Thi
 I created a way to prepare this classification beforehand to decrease running time of the pipeline. PyClassifyStructureList() is used to submit a list of SMILES or InChIs to ClassyFire and for each structure a query_id is created and saved. Once the classification has finished this query_id can then be used to retrieve the results of the classification. If the SMILES string did not give a classification it will try to use the rdkit_inchi_key. This is because I found that sometimes the SMILES did not work but the InChIKey created from that SMILES would give a ClassyFire result. This helps get a bit better performance in retrieving classification for the MIBiG classifications.
 
 * NPS
-NPS classifications are retrieved only with InChIKeys for 2 reasons, this was my initial goal so I programmed it first and I didn't have time in my project to add automatic classification retrieving through SMILES and secondly, the NPS database is really big and it would take a huge amount of time to create classifications for each structure.
-The InChIKey is retrieved from the database and the classification is retrieved with the PyClassify function. This uses pyclassyfire to basically search for the json file available for the InChIKey. Because I had so many problems with the InChIKeys and retrieving classifications I decided it was a good idea to try every possible InChIKey for the structure that I could think off. This meant that if I couldn't find a classification I would generate a InChIKey without charge, stereochemistry or without both and try to get results with those. This might not be as accurate since technically it could result in slightly different classifications than the original structure should have, but I think it is better than no classification.
-The classification results are also saved as a seperate file with the InChIKey used as name.
+NPS classifications are retrieved only through InChIKeys.
+The InChIKey is retrieved from the database and the classification is retrieved with the PyClassify function. This uses pyclassyfire to basically search for the json file available for the InChIKey. It tries to create 4 different versions of the starting InChIKey to create the most highest possibility of classification.
+The classification results are added to the SQLite database and also saved as a seperate file with the InChIKey used as name.
 
 ###FormatMibigForDiagram.py
 This script is not part of the main pipeline, and is used to format an output of the mibig table so it can be used in RAWGraphs.io.
@@ -189,10 +186,12 @@ To get an appropiate file to use as input use the following settings in SQLite:
 SELECT * FROM mibig WHERE 1 --replace "1" with a search query to narrow results
 ```
 
+
+
 ## Explanation of Files
 
 ### Natural_Product_Structure.sqlite
-This is the sqlite database that I started with and appended to. It was created by Sam Stokman and at the time of writing she is working on a new version. According to what I have heard my pipeline should still work with the new version altough it might need minor changes like updated column names. This database contained 3 tables: data_source, structure and structure_has_data_source.
+This is the sqlite database that I started with and appended to. It was created by Sam Stokman and at the time of writing she is working on a new version. My pipeline will still work with the new pipeline, but a lot of the steps will become unnecessary and some settings will need to be changed. This database contained 3 tables: data_source, structure and structure_has_data_source.
 
 1. data_source
 This table has 2 column: source_name and nr_of_structures.
