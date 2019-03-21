@@ -54,10 +54,10 @@ if __name__ == "__main__":
     biosyn_list = []
     for cf in cf_classes:
         c.execute(f"SELECT count(*) FROM {tablename} WHERE {cf_column_name} = '{cf}'")
-        cf_list.append(c.fetchone()[0])
+        cf_list.append(str(c.fetchone()[0]))
     for biosyn in biosyn_classes:
         c.execute(f"SELECT count(*) FROM {tablename} WHERE {biosyn_class_column_name} LIKE '%{biosyn}%'")
-        biosyn_list.append(c.fetchone()[0])
+        biosyn_list.append(str(c.fetchone()[0]))
 
     # Saving and closing the SQLite database
     conn.commit()
@@ -75,14 +75,17 @@ if __name__ == "__main__":
 
     # Output the table and other data
     results = '\n'.join(result_table)
-    print(results)
-    print("Output also available as file: ThesisResultOutput.txt")
     output_text = "Total structures in each CF class\r\n"
     output_text += '\t'.join(cf_list) + "\r\n"
     output_text += "\r\nTotal structures in each BGC class\r\n"
     output_text += '\t'.join(biosyn_list) + "\r\n"
+
+    print(results)
+    print()
+    print(output_text)
+    print("Output also available as file: ThesisResultOutput.txt")
     with open("ThesisResultOutput.txt","w") as f:
-        f.write(result)
+        f.write(results)
         f.write('\r\n\r\n\r\n')
         f.write(output_text)
 
