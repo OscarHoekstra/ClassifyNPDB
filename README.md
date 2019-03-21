@@ -1,5 +1,4 @@
 # Classify Natural Product Database (ClassifyNPDB)
-## README is WIP
 
 I created this project during my Bachelor Thesis at the Bioinformatics group at the WUR. 
 My main research goal was to try to improve the linking of NPS (Natural Product Structures) to BGCs (Biosynthetic Gene Clusters) through classification. To do this I created a pipeline that i called classifyNPDB (Classify Natural Product Database) that is mostly split up into two parts, NPS and MIBiG. The goal was to collect the necessary data and obtain classification of the MIBiG structures to compare them to the BGC classification. Furthermore, it needed to be able to add classifications to the in-house NPDB (explained below). The pipeline was specifically created for my use case and the data I had access to, but I made it modular so you can enable or disable parts to make it run with your dataset and produce and output of your desire.
@@ -175,7 +174,7 @@ NPS classifications are retrieved only through InChIKeys.
 The InChIKey is retrieved from the database and the classification is retrieved with the PyClassify function. This uses pyclassyfire to basically search for the json file available for the InChIKey. It tries to create 4 different versions of the starting InChIKey to create the most highest possibility of classification.
 The classification results are added to the SQLite database and also saved as a seperate file with the InChIKey used as name.
 
-###FormatMibigForDiagram.py
+###FormatMibigForDiagram2.py
 This script is not part of the main pipeline, and is used to format an output of the mibig table so it can be used in RAWGraphs.io.
 To get an appropiate file to use as input use the following settings in SQLite: 
 ```
@@ -186,7 +185,13 @@ To get an appropiate file to use as input use the following settings in SQLite:
 SELECT * FROM mibig WHERE 1 --replace "1" with a search query to narrow results
 ```
 
+###SubmitUnclassifiedToClassyFire.py
+With this script, that is not implemented into the main pipeline, you can send SMILES from the NPDB to ClassyFire and save the QueryID that is generated with the correct structure_id in the database. It requires a TSV input file with structure_id as first column and SMILES or InChI as second column.
 
+###CreateThesisResults.py
+This script creates a table that contains the amount of linking between BGC classes and ClassyFire SuperClasses (or others).
+You can divide a row by the total structures in that Superclass to get the percentage chance of finding a BGC class for each CF class, or a column by the total structures in that BGC class ot get the percentage chance of finding a Superclass in each BGC class.
+See Thesis Result Excel for example.
 
 ## Explanation of Files
 
