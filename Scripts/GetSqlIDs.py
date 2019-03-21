@@ -24,7 +24,7 @@ def Retrieve_NP_IDs(sqlite_file,table_name,id_column = "structure_id"):
 
     # Adding the NP_IDs to a list
     NPDB_ID_List = []
-    for ID in c.execute(f'SELECT {id_column} from {table_name}'):
+    for ID in c.execute(f'SELECT {id_column} from {table_name} where cf_kingdom = "NA" or cf_kingdom = "Unclassified"'):
         NPDB_ID_List.append(ID)
 
     # Committing changes and closing the connection to the database file

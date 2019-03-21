@@ -11,7 +11,7 @@ import time
 
 
 def Settings():
-    Workbase = '/mnt/scratch/hoeks102/Thesis_Bsc/Workbase/'
+    Workbase = '/mnt/scratch/hoeks102/Thesis_Bsc/4Workbase/ClassifyNPDB/'
     ScriptFolder = Workbase+'Scripts/'
     InFilesFolder = Workbase+'InFiles/'
     Start = time.time()
@@ -22,7 +22,7 @@ def Settings():
         # Add a number to this set to skip that step of the pipeline.
         # Step 1 can not be skipped as its necessary for further steps
         # and it is also really short.
-        "SkipSteps": (0,4,5,6),
+        "SkipSteps": (0,2,3,4,5,6),
 
         # The amount of BGCs that should be missing before the script will
         # assume it is at the end and stop:
@@ -49,7 +49,7 @@ def Settings():
 
 # File Paths
         # Path to the SQL database that the script works with:
-        "SQLPath": Workbase+'Natural_Product_Structure.sqlite',
+        "SQLPath": Workbase+'NPDatabase_new.sqlite',
 
         # Path to the file with the inchi-keys for the NPDB create
         # by molconvert, with credits to Rutger Ozinga
@@ -76,7 +76,11 @@ def Settings():
         "structure_id": 'structure_id', #standard:'structure_id'
 
         # Name of the column with inchi-keys to get classifications for:
-        "InchiKeyToClassify": 'inchi_key', #standard:'inchi_key'
+        "InchiKeyToClassify": 'inchi_key_molconvert', #standard:'inchi_key'
+
+        # Name of the secondary inchi-key to try if first one failed.
+        # Set this to false to skip this step.
+        "BackupInchiKey": 'inchi_key_rdkit'
 
 
 # Settings about the (to be created) MIBiG table in the SQL database.

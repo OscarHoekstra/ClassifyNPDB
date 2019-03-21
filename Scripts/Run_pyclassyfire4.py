@@ -111,14 +111,14 @@ def TestQueryIDs(l):
                 empty += 1
             elif len(Class['entities']) > 1:
                 print("WHAT?!")
-                sys.exit()                
+                sys.exit()
             else:
-                print(Class['entities'])
+                print(i)
                 good += 1
         except Exception as e:
             print(e)
             bad += 1
-        
+
     print("good",good)
     print("bad",bad)
     print("empty",empty)
@@ -294,7 +294,8 @@ def AddColumns(sqlite_file, table_name):
 
 def main(IDList, SqliteFile, TableName,
         IDcolumn = 'structure_id',
-        InchiColumn="inchi_key",
+        InchiColumn="inchi_key_molconvert",
+        BackupInchiColumn="inchi_key_rdkit",
         Batched = False,
         TimeStamp = 000000):
     """Run Classyfire on all inchi-keys of a column in a SQlite table
@@ -304,6 +305,7 @@ def main(IDList, SqliteFile, TableName,
         SqliteFile -- Path to the SQlite database
         TableName -- Name of the table in the database to edit
         InchiColumn -- Name of the column with the inchi_keys
+        BackupInchiColumn -- Name of the column with a second inchi-key
         Batched -- Boolean, wheter to perform the classification in batches
         TimeStamp -- int/float, used to indicate when the output was created
     """
@@ -341,15 +343,24 @@ def main(IDList, SqliteFile, TableName,
         c.execute(f"SELECT {inchi_column_name} FROM {table_name} WHERE {id_column} == '{NP_ID[0]}'")
         inchi_key = c.fetchone()[0]
         Class = PyClassify(inchi_key)
+
+        # If the first inchi key did not return a result, try a backup
+        if BackupInchiColumn != False:
+            if Class == False or Class == {}:
+                c.execute(f"SELECT {BackupInchiColumn} FROM {table_name} WHERE {id_column} == '{NP_ID[0]}'")
+                inchi_key = c.fetchone()[0]
+                Class = PyClassify(inchi_key)
+
+
         if Class == False:
-            print(inchi_key,NP_ID[0],"classification could not be found")
+            #print(inchi_key,NP_ID[0],"classification could not be found")
             EX = ["Unclassified"]*len(columns)
             ListUnclassified.append(NP_ID[0])
         elif Class == {}:
-            print(inchi_key,NP_ID[0],"has an empty classification")
+            #print(inchi_key,NP_ID[0],"has an empty classification")
             EX = ["NA"]*len(columns)
             ListEmpty.append(NP_ID[0])
-        elif Class != False:
+        else:
             EX = []
             try:
                 EX.append(Class.get('direct_parent','NA').get('name','NA'))
@@ -414,11 +425,7 @@ def main(IDList, SqliteFile, TableName,
             #Problematic apostrophes in the text need to be removed
             EX = ([s.replace('\'', '`') for s in EX if type(s) == str])
             EX = CopyDirectParent(EX)
-        else:
-            Print("UNKNOWN ERROR IN CODE, THIS SHOULDNT HAPPEN")
-            FailedStructures.append("NA "+NP_ID[0])
-            print(NP_ID[0])
-            print(Class)
+
 
         sql = (f"UPDATE {table_name} SET {columns[0]}='{EX[0]}',"
                f"{columns[1]}='{EX[1]}', {columns[2]}='{EX[2]}',"

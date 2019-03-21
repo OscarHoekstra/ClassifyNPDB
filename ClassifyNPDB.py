@@ -10,6 +10,7 @@ with classifications
 import time
 import sys
 import config
+import os
 from Scripts import GetSqlIDs, InchiToSQL, ClassifyMibigTsv
 from Scripts import MIBiGToSQL4, Run_pyclassyfire4
 from Scripts import InteractWithSQL as Sql
@@ -60,6 +61,12 @@ if __name__ == "__main__":
     # command line which will end up in the output.
     with open(cfg['UnclassifiedFile'], 'w') as w:
         w.write("Arguments: "+str(sys.argv)+"\n")
+
+    #Create folder for the ClassyFireJsonFiles if it doesnt exist
+    try:
+        os.mkdir('ClassyFireJsonFiles')
+    except:
+        print("ClassyFireJsonFiles already exists.")
 
 
     # Can not skip step 1, NPDB_IDs is necessary for other steps
@@ -161,6 +168,7 @@ if __name__ == "__main__":
                                        cfg['NPDBtable'],
                                        IDcolumn = cfg['structure_id'],
                                        InchiColumn = cfg['InchiKeyToClassify'],
+                                       BackupInchiColumn = cfg['BackupInchiKey'],
                                        Batched = True,
                                        TimeStamp = cfg['StartTimestamp'])
                 for item in Batch:
