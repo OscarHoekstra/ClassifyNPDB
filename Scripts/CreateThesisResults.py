@@ -46,17 +46,17 @@ if __name__ == "__main__":
         for biosyn in biosyn_classes:
             # This gets the actual number and adds it to the result
             #print(f"SELECT count(*) FROM {tablename} WHERE {cf_column_name} = '{cf}' AND {biosyn_class_column_name} LIKE '%{biosyn}%'")
-            c.execute(f"SELECT count(*) FROM {tablename} WHERE {cf_column_name} = '{cf}' AND {biosyn_class_column_name} LIKE '%{biosyn}%'")
+            c.execute(f"SELECT count(*) FROM {tablename} WHERE chem_struct != 'NA' AND {cf_column_name} = '{cf}' AND {biosyn_class_column_name} LIKE '%{biosyn}%'")
             result_list.append(str(c.fetchone()[0]))
 
     # Get the total structures in each BGC class and each CF class
     cf_list = []
     biosyn_list = []
     for cf in cf_classes:
-        c.execute(f"SELECT count(*) FROM {tablename} WHERE {cf_column_name} = '{cf}'")
+        c.execute(f"SELECT count(*) FROM {tablename} WHERE chem_struct != 'NA' AND {cf_column_name} = '{cf}'")
         cf_list.append(str(c.fetchone()[0]))
     for biosyn in biosyn_classes:
-        c.execute(f"SELECT count(*) FROM {tablename} WHERE {biosyn_class_column_name} LIKE '%{biosyn}%'")
+        c.execute(f"SELECT count(*) FROM {tablename} WHERE chem_struct != 'NA' AND {biosyn_class_column_name} LIKE '%{biosyn}%'")
         biosyn_list.append(str(c.fetchone()[0]))
 
     # Saving and closing the SQLite database
